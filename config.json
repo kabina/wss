@@ -1,0 +1,99 @@
+{
+  "testschem": [
+            "ocpp16/websocket/standard",
+            "ocpp16/websocket/u+",
+            "ocpp16/websocket/u+(evar)",
+            "ocpp16/websocket/u+(HV)",
+            "ocpp20/websocket/standard",
+            "ocpp20/websocket/u+",
+            "ocpp16/websocket/u+(multi)",
+            "ocpp16/websocket/u+(GENIS)"
+
+  ],
+  "urls": {
+    "rest": "https://rgw.devevspcharger.uplus.co.kr/ioc",
+    "wss": "wss://ws.devevspcharger.uplus.co.kr"
+  },
+  "properties": {
+    "protocol": {
+      "ocpp16/websocket/standard": {
+        "crgr_sno": "EVSCA050001",
+        "crgr_rsno": "EVSCA050002",
+        "crgr_cid": "115001514011A",
+        "crgr_rcid": "115001514021A",
+        "crgr_mdl": "ELA007C05",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+      "ocpp16/websocket/u+": {
+        "crgr_sno": "EVSCA070007",
+        "crgr_rsno": "EVSCA070007",
+        "crgr_cid": "115001513031A",
+        "crgr_rcid": "115001513031A",
+        "crgr_mdl": "ELA007C01",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+      "ocpp16/websocket/u+(evar)": {
+        "crgr_sno": "EVSCA0101629",
+        "crgr_rsno": "EVSCA0101629",
+        "crgr_cid": "411310106011A",
+        "crgr_rcid": "411310106011A",
+        "crgr_mdl": "ELA007C01",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+           "ocpp16/websocket/u+(HV)": {
+        "crgr_sno": "FFFFFFFFFFFF",
+        "crgr_rsno": "FFFFFFFFFFFF",
+        "crgr_cid": "114400999011A",
+        "crgr_rcid": "114400999011A",
+        "crgr_mdl": "JC-6511JA-P",
+        "auth_token": "Basic SkM6SkNMR1U=",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+                 "ocpp16/websocket/u+(multi)": {
+        "crgr_sno": "ELC100C-003-001",
+        "crgr_rsno": "ELC100C-003-001",
+        "crgr_cid": "115001513153C",
+        "crgr_rcid": "115001513153C",
+        "crgr_mdl": "ELC100C-003",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "3",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+                 "ocpp16/websocket/u+(GENIS)": {
+        "crgr_sno": "GK-0223",
+        "crgr_rsno": "GK-0223",
+        "crgr_cid": "115001536011A",
+        "crgr_rcid": "115001536011A",
+        "crgr_mdl": "GK-SMC-AC-7",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "3",
+        "interval1": 3600,
+        "interval2": 14400
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "TC_052": [
+         ["BootNotification", {}],
+         ["Wait", "ReserveNow", {
+             "connectorId": 1,
+             "expiryDate": "2023-01-01T00:00:00Z",
+             "idTag": "1031040000069641",
+             "reservationId": 3213123}],
+         ["Reply", "ReserveNow", {"status": "Accepted"}],
+         ["StatusNotification", {"status": "Reserved"}],
+         ["Wait", "CancelReservation", {
+             "reservationId": 3213124}],
+         ["Reply", "CancelReservation", {"status": "Rejected"}],
+         ["StatusNotification", {"status": "Available"}]
+     ],
+}

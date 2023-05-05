@@ -13,7 +13,6 @@ import tkinter as tk
 from tkinter import *
 import timeit
 from ChargerUtil import checkSchema, tc_render
-import OpenSSL.crypto
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ch = logging.StreamHandler()

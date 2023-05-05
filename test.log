@@ -51216,3 +51216,300 @@ TypeError: can only concatenate str (not "TypeError") to str
 2023-04-27 17:32:12,213 - DEBUG - > CLOSE 1000 (OK) [2 bytes]
 2023-04-27 17:32:12,230 - DEBUG - < CLOSE 1000 (OK) [2 bytes]
 2023-04-27 17:32:12,238 - DEBUG - = connection is CLOSED
+2023-05-05 10:55:41,613 - DEBUG - = connection is CONNECTING
+2023-05-05 10:55:41,629 - DEBUG - > GET /ocpp16/ELA007C05/EVSCA050001 HTTP/1.1
+2023-05-05 10:55:41,629 - DEBUG - > Host: ws.devevspcharger.uplus.co.kr
+2023-05-05 10:55:41,629 - DEBUG - > Upgrade: websocket
+2023-05-05 10:55:41,629 - DEBUG - > Connection: Upgrade
+2023-05-05 10:55:41,629 - DEBUG - > Sec-WebSocket-Key: cYEVnovHAQUdCjJfKaG7wA==
+2023-05-05 10:55:41,629 - DEBUG - > Sec-WebSocket-Version: 13
+2023-05-05 10:55:41,629 - DEBUG - > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2023-05-05 10:55:41,629 - DEBUG - > Sec-WebSocket-Protocol: ocpp1.6
+2023-05-05 10:55:41,629 - DEBUG - > Authorization: Basic RVZBUjpFVkFSTEdV
+2023-05-05 10:55:41,629 - DEBUG - > User-Agent: Python/3.11 websockets/11.0.2
+2023-05-05 10:55:44,956 - DEBUG - < HTTP/1.1 101 Switching Protocols
+2023-05-05 10:55:44,956 - DEBUG - < Connection: upgrade
+2023-05-05 10:55:44,956 - DEBUG - < Date: Fri, 05 May 2023 01:55:38 GMT
+2023-05-05 10:55:44,956 - DEBUG - < sec-websocket-protocol: ocpp1.6
+2023-05-05 10:55:44,956 - DEBUG - < upgrade: websocket
+2023-05-05 10:55:44,956 - DEBUG - < sec-websocket-accept: ybzxowTrEoLorwu2hpI/fiWdBuc=
+2023-05-05 10:55:44,956 - DEBUG - < sec-websocket-extensions: permessage-deflate
+2023-05-05 10:55:44,956 - DEBUG - < X-Cache: Miss from cloudfront
+2023-05-05 10:55:44,956 - DEBUG - < Via: 1.1 657313371e3e43888fa3f55c1db116a2.cloudfront.net (CloudFront)
+2023-05-05 10:55:44,956 - DEBUG - < X-Amz-Cf-Pop: ICN51-C1
+2023-05-05 10:55:44,956 - DEBUG - < X-Amz-Cf-Id: QuYPCzm7R3QAotzRUvDVvx9Uj9QoiKEMG53rghWLi8k-63DOsnFxBQ==
+2023-05-05 10:55:44,956 - DEBUG - = connection is OPEN
+2023-05-05 10:55:45,003 - DEBUG - > TEXT '[2, "64ec892a-2f1d-4633-94a4-678aa846f7db", "Bo...ePointVendor": "EVAR"}]' [127 bytes]
+2023-05-05 10:55:47,080 - DEBUG - < TEXT '[3, "64ec892a-2f1d-4633-94a4-678aa846f7db", {"s...40Z", "interval": 600}]' [123 bytes]
+2023-05-05 10:55:47,112 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-2' coro=<ChargerSim.startEvent() done, defined at C:\workspace\wss\main.py:124> exception=ModuleNotFoundError("No module named 'requests'")>
+Traceback (most recent call last):
+  File "C:\workspace\wss\main.py", line 144, in startEvent
+    await self.charger.runcase(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+  File "C:\workspace\wss\Charger.py", line 392, in runcase
+    await self.callbackRequest( doc)
+  File "C:\workspace\wss\Charger.py", line 308, in callbackRequest
+    import requests, uuid
+ModuleNotFoundError: No module named 'requests'
+2023-05-05 10:56:05,001 - DEBUG - % sending keepalive ping
+2023-05-05 10:56:05,001 - DEBUG - > PING df d4 ac 17 [binary, 4 bytes]
+2023-05-05 10:56:05,016 - DEBUG - < PONG df d4 ac 17 [binary, 4 bytes]
+2023-05-05 10:56:05,032 - DEBUG - % received keepalive pong
+2023-05-05 10:56:25,043 - DEBUG - % sending keepalive ping
+2023-05-05 10:56:25,043 - DEBUG - > PING 95 a4 62 f6 [binary, 4 bytes]
+2023-05-05 10:56:25,058 - DEBUG - < PONG 95 a4 62 f6 [binary, 4 bytes]
+2023-05-05 10:56:25,058 - DEBUG - % received keepalive pong
+2023-05-05 10:56:38,229 - DEBUG - = connection is CONNECTING
+2023-05-05 10:56:38,276 - DEBUG - > GET /ocpp16/ELA007C05/EVSCA050001 HTTP/1.1
+2023-05-05 10:56:38,276 - DEBUG - > Host: ws.devevspcharger.uplus.co.kr
+2023-05-05 10:56:38,276 - DEBUG - > Upgrade: websocket
+2023-05-05 10:56:38,276 - DEBUG - > Connection: Upgrade
+2023-05-05 10:56:38,276 - DEBUG - > Sec-WebSocket-Key: 0KSYabusyoixUYV3UEb5UQ==
+2023-05-05 10:56:38,276 - DEBUG - > Sec-WebSocket-Version: 13
+2023-05-05 10:56:38,276 - DEBUG - > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2023-05-05 10:56:38,276 - DEBUG - > Sec-WebSocket-Protocol: ocpp1.6
+2023-05-05 10:56:38,276 - DEBUG - > Authorization: Basic RVZBUjpFVkFSTEdV
+2023-05-05 10:56:38,276 - DEBUG - > User-Agent: Python/3.11 websockets/11.0.2
+2023-05-05 10:56:38,667 - DEBUG - < HTTP/1.1 101 Switching Protocols
+2023-05-05 10:56:38,667 - DEBUG - < Connection: upgrade
+2023-05-05 10:56:38,682 - DEBUG - < Date: Fri, 05 May 2023 01:56:32 GMT
+2023-05-05 10:56:38,682 - DEBUG - < sec-websocket-protocol: ocpp1.6
+2023-05-05 10:56:38,682 - DEBUG - < upgrade: websocket
+2023-05-05 10:56:38,682 - DEBUG - < sec-websocket-accept: Y0jMOBO4ZyAX82yTMqriFL5j0jA=
+2023-05-05 10:56:38,682 - DEBUG - < sec-websocket-extensions: permessage-deflate
+2023-05-05 10:56:38,682 - DEBUG - < X-Cache: Miss from cloudfront
+2023-05-05 10:56:38,682 - DEBUG - < Via: 1.1 6371e42dc4882f0fa4f731d1a82340f2.cloudfront.net (CloudFront)
+2023-05-05 10:56:38,682 - DEBUG - < X-Amz-Cf-Pop: ICN51-C1
+2023-05-05 10:56:38,682 - DEBUG - < X-Amz-Cf-Id: h99sa5WPb2A5_JF2mboGNQEQE_2R_r5EzrJnyToLVGQ4LxMpnnFWdA==
+2023-05-05 10:56:38,682 - DEBUG - = connection is OPEN
+2023-05-05 10:56:38,729 - DEBUG - > TEXT '[2, "ce3f58ab-b770-487b-ac66-04b420ceb988", "Bo...ePointVendor": "EVAR"}]' [127 bytes]
+2023-05-05 10:56:39,089 - DEBUG - < TEXT '[3, "ce3f58ab-b770-487b-ac66-04b420ceb988", {"s...32Z", "interval": 600}]' [123 bytes]
+2023-05-05 10:56:39,135 - DEBUG - Starting new HTTPS connection (1): rgw.devevspcharger.uplus.co.kr:443
+2023-05-05 10:56:40,713 - DEBUG - https://rgw.devevspcharger.uplus.co.kr:443 "POST /ioc HTTP/1.1" 200 123
+2023-05-05 10:56:40,760 - DEBUG - < TEXT '[2, "6fe8ecf9-1dbb-40de-9daf-bcef33ebdff3", "Ge...ration", {"key": [""]}]' [78 bytes]
+2023-05-05 10:56:40,760 - DEBUG - > TEXT '[3, "6fe8ecf9-1dbb-40de-9daf-bcef33ebdff3", {"c...ts", "value": "true"}}]' [120 bytes]
+2023-05-05 10:56:41,166 - DEBUG - < TEXT '' [0 bytes]
+2023-05-05 10:56:41,182 - DEBUG - Starting new HTTPS connection (1): rgw.devevspcharger.uplus.co.kr:443
+2023-05-05 10:56:41,635 - DEBUG - https://rgw.devevspcharger.uplus.co.kr:443 "POST /ioc HTTP/1.1" 200 164
+2023-05-05 10:56:41,713 - DEBUG - < TEXT '[2, "4efabfc8-9637-4490-9b0d-d445bdbe1cf6", "Ch...rval", "value": "300"}]' [119 bytes]
+2023-05-05 10:56:41,713 - DEBUG - > TEXT '[3, "4efabfc8-9637-4490-9b0d-d445bdbe1cf6", {"status": "Accepted"}]' [67 bytes]
+2023-05-05 10:56:41,916 - DEBUG - < TEXT '' [0 bytes]
+2023-05-05 10:56:41,978 - DEBUG - > TEXT '[2, "ce3f58ab-b770-487b-ac66-04b420ceb988", "Bo...ePointVendor": "EVAR"}]' [127 bytes]
+2023-05-05 10:56:42,431 - DEBUG - < TEXT '[3, "ce3f58ab-b770-487b-ac66-04b420ceb988", {"s...36Z", "interval": 600}]' [123 bytes]
+2023-05-05 10:56:42,494 - DEBUG - > TEXT '[2, "ce3f58ab-b770-487b-ac66-04b420ceb988", "St..."status": "Available"}]' [132 bytes]
+2023-05-05 10:56:44,868 - DEBUG - < TEXT '[3, "ce3f58ab-b770-487b-ac66-04b420ceb988", {}]' [47 bytes]
+2023-05-05 10:56:44,931 - DEBUG - > TEXT '[2, "7b7f4182-e3ab-4f24-8324-a91e2e7b263c", "Heartbeat", {}]' [60 bytes]
+2023-05-05 10:56:45,165 - DEBUG - < TEXT '[3, "7b7f4182-e3ab-4f24-8324-a91e2e7b263c", {"c...2023-05-05T10:56:39Z"}]' [84 bytes]
+2023-05-05 10:56:45,212 - DEBUG - = connection is CLOSING
+2023-05-05 10:56:45,212 - DEBUG - > CLOSE 1000 (OK) [2 bytes]
+2023-05-05 10:56:45,228 - DEBUG - < CLOSE 1000 (OK) [2 bytes]
+2023-05-05 10:56:45,228 - DEBUG - = connection is CLOSED
+2023-05-05 11:54:24,442 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-2' coro=<ChargerSim.startEvent() done, defined at C:\workspace\wss\main.py:125> exception=TypeError('can only concatenate str (not "TypeError") to str')>
+Traceback (most recent call last):
+  File "C:\workspace\wss\Charger.py", line 177, in conn
+    ssl_context.set_ciphers(
+TypeError: set_ciphers() argument must be str, not tuple
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\workspace\wss\main.py", line 145, in startEvent
+    await self.charger.runcase(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+  File "C:\workspace\wss\Charger.py", line 355, in runcase
+    await self.conn(case)
+  File "C:\workspace\wss\Charger.py", line 221, in conn
+    self.log(err)
+  File "C:\workspace\wss\Charger.py", line 122, in log
+    self.txt_recv.insert(END, datetime.now().isoformat() +' '+ log + '\n', attr)
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+TypeError: can only concatenate str (not "TypeError") to str
+2023-05-05 11:57:42,195 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-2' coro=<ChargerSim.startEvent() done, defined at C:\workspace\wss\main.py:125> exception=TypeError('can only concatenate str (not "TypeError") to str')>
+Traceback (most recent call last):
+  File "C:\workspace\wss\Charger.py", line 178, in conn
+    ssl_context.set_ciphers(
+TypeError: set_ciphers() argument must be str, not tuple
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\workspace\wss\main.py", line 145, in startEvent
+    await self.charger.runcase(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+  File "C:\workspace\wss\Charger.py", line 356, in runcase
+    await self.conn(case)
+  File "C:\workspace\wss\Charger.py", line 222, in conn
+    self.log(err)
+  File "C:\workspace\wss\Charger.py", line 122, in log
+    self.txt_recv.insert(END, datetime.now().isoformat() +' '+ log + '\n', attr)
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+TypeError: can only concatenate str (not "TypeError") to str
+2023-05-05 11:58:01,039 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-3' coro=<ChargerSim.startEvent() done, defined at C:\workspace\wss\main.py:125> exception=TypeError('can only concatenate str (not "TypeError") to str')>
+Traceback (most recent call last):
+  File "C:\workspace\wss\Charger.py", line 178, in conn
+    ssl_context.set_ciphers(
+TypeError: set_ciphers() argument must be str, not tuple
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\workspace\wss\main.py", line 145, in startEvent
+    await self.charger.runcase(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+  File "C:\workspace\wss\Charger.py", line 356, in runcase
+    await self.conn(case)
+  File "C:\workspace\wss\Charger.py", line 222, in conn
+    self.log(err)
+  File "C:\workspace\wss\Charger.py", line 122, in log
+    self.txt_recv.insert(END, datetime.now().isoformat() +' '+ log + '\n', attr)
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+TypeError: can only concatenate str (not "TypeError") to str
+2023-05-05 12:05:18,140 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-2' coro=<ChargerSim.startEvent() done, defined at C:\workspace\wss\main.py:125> exception=TypeError('can only concatenate str (not "TypeError") to str')>
+Traceback (most recent call last):
+  File "C:\workspace\wss\Charger.py", line 178, in conn
+    ssl_context.set_ciphers(
+TypeError: SSLContext.set_ciphers() takes exactly one argument (18 given)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\workspace\wss\main.py", line 145, in startEvent
+    await self.charger.runcase(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+  File "C:\workspace\wss\Charger.py", line 356, in runcase
+    await self.conn(case)
+  File "C:\workspace\wss\Charger.py", line 222, in conn
+    self.log(err)
+  File "C:\workspace\wss\Charger.py", line 122, in log
+    self.txt_recv.insert(END, datetime.now().isoformat() +' '+ log + '\n', attr)
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+TypeError: can only concatenate str (not "TypeError") to str
+2023-05-05 12:06:09,192 - DEBUG - = connection is CONNECTING
+2023-05-05 12:06:09,224 - DEBUG - > GET /ocpp16/ELA007C05/EVSCA050001 HTTP/1.1
+2023-05-05 12:06:09,224 - DEBUG - > Host: ws.devevspcharger.uplus.co.kr
+2023-05-05 12:06:09,224 - DEBUG - > Upgrade: websocket
+2023-05-05 12:06:09,224 - DEBUG - > Connection: Upgrade
+2023-05-05 12:06:09,224 - DEBUG - > Sec-WebSocket-Key: hw9l27MdIRhJC4EP8r7z4w==
+2023-05-05 12:06:09,224 - DEBUG - > Sec-WebSocket-Version: 13
+2023-05-05 12:06:09,224 - DEBUG - > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2023-05-05 12:06:09,224 - DEBUG - > Sec-WebSocket-Protocol: ocpp1.6
+2023-05-05 12:06:09,224 - DEBUG - > Authorization: Basic RVZBUjpFVkFSTEdV
+2023-05-05 12:06:09,224 - DEBUG - > User-Agent: Python/3.11 websockets/11.0.2
+2023-05-05 12:06:11,459 - DEBUG - < HTTP/1.1 101 Switching Protocols
+2023-05-05 12:06:11,459 - DEBUG - < Connection: upgrade
+2023-05-05 12:06:11,459 - DEBUG - < Date: Fri, 05 May 2023 03:06:04 GMT
+2023-05-05 12:06:11,459 - DEBUG - < sec-websocket-protocol: ocpp1.6
+2023-05-05 12:06:11,459 - DEBUG - < upgrade: websocket
+2023-05-05 12:06:11,459 - DEBUG - < sec-websocket-accept: BD0vhWzy0z2tviy4rEu7eqwUis8=
+2023-05-05 12:06:11,459 - DEBUG - < sec-websocket-extensions: permessage-deflate
+2023-05-05 12:06:11,459 - DEBUG - < X-Cache: Miss from cloudfront
+2023-05-05 12:06:11,459 - DEBUG - < Via: 1.1 3c4f6166f658ad61ccdfcd137aebced0.cloudfront.net (CloudFront)
+2023-05-05 12:06:11,459 - DEBUG - < X-Amz-Cf-Pop: ICN54-C3
+2023-05-05 12:06:11,459 - DEBUG - < X-Amz-Cf-Id: aGckS-Rpyz4b3rLFzRXa0uWyzUKX5ldcxmHN8EgfiH6tSn1WnmI6mQ==
+2023-05-05 12:06:11,459 - DEBUG - = connection is OPEN
+2023-05-05 12:06:11,521 - DEBUG - > TEXT '[2, "dd22c599-a2f9-4f5b-a671-20651e0e78d9", "Bo...ePointVendor": "EVAR"}]' [127 bytes]
+2023-05-05 12:06:12,849 - DEBUG - < TEXT '[3, "dd22c599-a2f9-4f5b-a671-20651e0e78d9", {"s...06Z", "interval": 600}]' [123 bytes]
+2023-05-05 12:06:12,912 - DEBUG - Starting new HTTPS connection (1): rgw.devevspcharger.uplus.co.kr:443
+2023-05-05 12:06:14,474 - DEBUG - https://rgw.devevspcharger.uplus.co.kr:443 "POST /ioc HTTP/1.1" 200 123
+2023-05-05 12:06:14,490 - DEBUG - < TEXT '[2, "4aedc06d-fb4b-48e9-b712-36c224a957f0", "Ge...ration", {"key": [""]}]' [78 bytes]
+2023-05-05 12:06:14,505 - DEBUG - > TEXT '[3, "4aedc06d-fb4b-48e9-b712-36c224a957f0", {"c...ts", "value": "true"}}]' [120 bytes]
+2023-05-05 12:06:14,661 - DEBUG - < TEXT '' [0 bytes]
+2023-05-05 12:06:14,708 - DEBUG - Starting new HTTPS connection (1): rgw.devevspcharger.uplus.co.kr:443
+2023-05-05 12:06:15,130 - DEBUG - https://rgw.devevspcharger.uplus.co.kr:443 "POST /ioc HTTP/1.1" 200 164
+2023-05-05 12:06:15,192 - DEBUG - < TEXT '[2, "8d86d348-f3a1-4e1d-af6b-4cfbb00f0c6d", "Ch...rval", "value": "300"}]' [119 bytes]
+2023-05-05 12:06:15,192 - DEBUG - > TEXT '[3, "8d86d348-f3a1-4e1d-af6b-4cfbb00f0c6d", {"status": "Accepted"}]' [67 bytes]
+2023-05-05 12:06:15,364 - DEBUG - < TEXT '' [0 bytes]
+2023-05-05 12:06:15,411 - DEBUG - > TEXT '[2, "dd22c599-a2f9-4f5b-a671-20651e0e78d9", "Bo...ePointVendor": "EVAR"}]' [127 bytes]
+2023-05-05 12:06:15,770 - DEBUG - < TEXT '[3, "dd22c599-a2f9-4f5b-a671-20651e0e78d9", {"s...09Z", "interval": 600}]' [123 bytes]
+2023-05-05 12:06:15,833 - DEBUG - > TEXT '[2, "dd22c599-a2f9-4f5b-a671-20651e0e78d9", "St..."status": "Available"}]' [132 bytes]
+2023-05-05 12:06:16,224 - DEBUG - < TEXT '[3, "dd22c599-a2f9-4f5b-a671-20651e0e78d9", {}]' [47 bytes]
+2023-05-05 12:06:16,302 - DEBUG - > TEXT '[2, "02a2dd10-4488-4d5e-9274-09d886c27dac", "Heartbeat", {}]' [60 bytes]
+2023-05-05 12:06:16,520 - DEBUG - < TEXT '[3, "02a2dd10-4488-4d5e-9274-09d886c27dac", {"c...2023-05-05T12:06:10Z"}]' [84 bytes]
+2023-05-05 12:06:16,551 - DEBUG - = connection is CLOSING
+2023-05-05 12:06:16,551 - DEBUG - > CLOSE 1000 (OK) [2 bytes]
+2023-05-05 12:06:16,567 - DEBUG - < CLOSE 1000 (OK) [2 bytes]
+2023-05-05 12:06:16,567 - DEBUG - = connection is CLOSED
+2023-05-05 12:07:12,466 - DEBUG - = connection is CONNECTING
+2023-05-05 12:07:12,497 - DEBUG - > GET /ocpp16/ELA007C05/EVSCA050001 HTTP/1.1
+2023-05-05 12:07:12,497 - DEBUG - > Host: ws.devevspcharger.uplus.co.kr
+2023-05-05 12:07:12,497 - DEBUG - > Upgrade: websocket
+2023-05-05 12:07:12,497 - DEBUG - > Connection: Upgrade
+2023-05-05 12:07:12,497 - DEBUG - > Sec-WebSocket-Key: 4GAFNQAYJ9fTWFuXP8mLMw==
+2023-05-05 12:07:12,497 - DEBUG - > Sec-WebSocket-Version: 13
+2023-05-05 12:07:12,497 - DEBUG - > Sec-WebSocket-Extensions: permessage-deflate; client_max_window_bits
+2023-05-05 12:07:12,497 - DEBUG - > Sec-WebSocket-Protocol: ocpp1.6
+2023-05-05 12:07:12,497 - DEBUG - > Authorization: Basic RVZBUjpFVkFSTEdV
+2023-05-05 12:07:12,497 - DEBUG - > User-Agent: Python/3.11 websockets/11.0.2
+2023-05-05 12:07:12,841 - DEBUG - < HTTP/1.1 101 Switching Protocols
+2023-05-05 12:07:12,841 - DEBUG - < Connection: upgrade
+2023-05-05 12:07:12,841 - DEBUG - < Date: Fri, 05 May 2023 03:07:06 GMT
+2023-05-05 12:07:12,841 - DEBUG - < sec-websocket-protocol: ocpp1.6
+2023-05-05 12:07:12,841 - DEBUG - < upgrade: websocket
+2023-05-05 12:07:12,841 - DEBUG - < sec-websocket-accept: YWisyrz17hhfbxeT3XRnVXpiyos=
+2023-05-05 12:07:12,841 - DEBUG - < sec-websocket-extensions: permessage-deflate
+2023-05-05 12:07:12,841 - DEBUG - < X-Cache: Miss from cloudfront
+2023-05-05 12:07:12,841 - DEBUG - < Via: 1.1 9bc94df127ca1995e6d5c4ae4ae8ad62.cloudfront.net (CloudFront)
+2023-05-05 12:07:12,841 - DEBUG - < X-Amz-Cf-Pop: ICN54-C3
+2023-05-05 12:07:12,841 - DEBUG - < X-Amz-Cf-Id: CdYqJ7ufG_2hcryns7t6cFQuRhOX91q-qTm96G5EH7Fi4WvND1LH-A==
+2023-05-05 12:07:12,841 - DEBUG - = connection is OPEN
+2023-05-05 12:07:12,888 - DEBUG - > TEXT '[2, "9540167c-70dd-4e84-adf0-1c26a6b6a67f", "Bo...ePointVendor": "EVAR"}]' [127 bytes]
+2023-05-05 12:07:13,232 - DEBUG - < TEXT '[3, "9540167c-70dd-4e84-adf0-1c26a6b6a67f", {"s...07Z", "interval": 600}]' [123 bytes]
+2023-05-05 12:07:13,294 - DEBUG - Starting new HTTPS connection (1): rgw.devevspcharger.uplus.co.kr:443
+2023-05-05 12:07:13,747 - DEBUG - https://rgw.devevspcharger.uplus.co.kr:443 "POST /ioc HTTP/1.1" 200 123
+2023-05-05 12:07:13,778 - DEBUG - < TEXT '[2, "cf3faeb3-f937-4d9f-9373-e3d09c4ab47a", "Ge...ration", {"key": [""]}]' [78 bytes]
+2023-05-05 12:07:13,778 - DEBUG - > TEXT '[3, "cf3faeb3-f937-4d9f-9373-e3d09c4ab47a", {"c...ts", "value": "true"}}]' [120 bytes]
+2023-05-05 12:07:13,966 - DEBUG - < TEXT '' [0 bytes]
+2023-05-05 12:07:13,997 - DEBUG - Starting new HTTPS connection (1): rgw.devevspcharger.uplus.co.kr:443
+2023-05-05 12:07:14,435 - DEBUG - https://rgw.devevspcharger.uplus.co.kr:443 "POST /ioc HTTP/1.1" 200 164
+2023-05-05 12:07:14,513 - DEBUG - < TEXT '[2, "6e35274c-1402-41f7-a4ee-e4a03cfb1e9f", "Ch...rval", "value": "300"}]' [119 bytes]
+2023-05-05 12:07:14,513 - DEBUG - > TEXT '[3, "6e35274c-1402-41f7-a4ee-e4a03cfb1e9f", {"status": "Accepted"}]' [67 bytes]
+2023-05-05 12:07:14,654 - DEBUG - < TEXT '' [0 bytes]
+2023-05-05 12:07:14,685 - DEBUG - > TEXT '[2, "9540167c-70dd-4e84-adf0-1c26a6b6a67f", "Bo...ePointVendor": "EVAR"}]' [127 bytes]
+2023-05-05 12:07:14,951 - DEBUG - < TEXT '[3, "9540167c-70dd-4e84-adf0-1c26a6b6a67f", {"s...08Z", "interval": 600}]' [123 bytes]
+2023-05-05 12:07:14,998 - DEBUG - > TEXT '[2, "9540167c-70dd-4e84-adf0-1c26a6b6a67f", "St..."status": "Available"}]' [132 bytes]
+2023-05-05 12:07:15,232 - DEBUG - < TEXT '[3, "9540167c-70dd-4e84-adf0-1c26a6b6a67f", {}]' [47 bytes]
+2023-05-05 12:07:15,310 - DEBUG - > TEXT '[2, "f4bc5a2f-8ab9-454b-a66e-67e8bf693eef", "Heartbeat", {}]' [60 bytes]
+2023-05-05 12:07:15,529 - DEBUG - < TEXT '[3, "f4bc5a2f-8ab9-454b-a66e-67e8bf693eef", {"c...2023-05-05T12:07:09Z"}]' [84 bytes]
+2023-05-05 12:07:15,560 - DEBUG - = connection is CLOSING
+2023-05-05 12:07:15,560 - DEBUG - > CLOSE 1000 (OK) [2 bytes]
+2023-05-05 12:07:15,560 - DEBUG - < CLOSE 1000 (OK) [2 bytes]
+2023-05-05 12:07:15,560 - DEBUG - = connection is CLOSED
+2023-05-05 12:07:22,528 - DEBUG - = connection is CONNECTING
+2023-05-05 12:07:22,543 - ERROR - Task exception was never retrieved
+future: <Task finished name='Task-8' coro=<ChargerSim.startEvent() done, defined at C:\workspace\wss\main.py:125> exception=TypeError('can only concatenate str (not "SSLZeroReturnError") to str')>
+Traceback (most recent call last):
+  File "C:\workspace\wss\Charger.py", line 180, in conn
+    self.ws = await websockets.connect(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspace\wss\venv\Lib\site-packages\websockets\legacy\client.py", line 655, in __await_impl_timeout__
+    return await self.__await_impl__()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\workspace\wss\venv\Lib\site-packages\websockets\legacy\client.py", line 659, in __await_impl__
+    _transport, _protocol = await self._create_connection()
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python311\Lib\asyncio\base_events.py", line 1112, in create_connection
+    transport, protocol = await self._create_connection_transport(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python311\Lib\asyncio\base_events.py", line 1145, in _create_connection_transport
+    await waiter
+  File "C:\Program Files\Python311\Lib\asyncio\sslproto.py", line 574, in _on_handshake_complete
+    raise handshake_exc
+  File "C:\Program Files\Python311\Lib\asyncio\sslproto.py", line 556, in _do_handshake
+    self._sslobj.do_handshake()
+  File "C:\Program Files\Python311\Lib\ssl.py", line 979, in do_handshake
+    self._sslobj.do_handshake()
+ssl.SSLZeroReturnError: TLS/SSL connection has been closed (EOF) (_ssl.c:992)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\workspace\wss\main.py", line 145, in startEvent
+    await self.charger.runcase(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+  File "C:\workspace\wss\Charger.py", line 355, in runcase
+    await self.conn(case)
+  File "C:\workspace\wss\Charger.py", line 221, in conn
+    self.log(err)
+  File "C:\workspace\wss\Charger.py", line 122, in log
+    self.txt_recv.insert(END, datetime.now().isoformat() +' '+ log + '\n', attr)
+                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~
+TypeError: can only concatenate str (not "SSLZeroReturnError") to str

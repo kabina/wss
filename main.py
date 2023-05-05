@@ -61,7 +61,8 @@ class ChargerSim(tk.Tk):
                         curProgress=self.curProgress,
                         bt_direct_send=self.bt_direct_send,
                         lb_mode_alert=self.lb_mode_alert,
-                        testschem=self.testschem
+                        testschem=self.testschem,
+                        ciphersuite=self.lst_ciphersuite
                         )
 
     def tcload_callback(self):
@@ -520,6 +521,19 @@ class ChargerSim(tk.Tk):
         self.en_idtag2 = Entry(self.frameConfTop)
         self.lb_idtag3 = Label(self.frameConfTop, text="idTag3", width=20)
         self.en_idtag3 = Entry(self.frameConfTop)
+        self.lb_ciphersuite = Label(self.frameConfTop, text="CipherSuite", width=20)
+        self.lst_ciphersuite = Listbox(self.frameConfTop, height=10, selectmode="extended", activestyle="none",
+                                 exportselection=False, width=50)
+        try :
+            with open("./config.json", encoding="utf-8") as fd:
+                self.lst_ciphersuite.delete(0,END)
+                cipers = json.loads(fd.read())["ciphersuite"]
+                for c in cipers :
+                    self.lst_ciphersuite.insert(END, c)
+                self.lst_ciphersuite.select_set(0, tk.END)
+        except Exception as e:
+            messagebox.showerror(title="구성파일", message="구성파일(config.json) 오류, 파일 존재 및 내용을 확인 하세요")
+            self.window.destroy()
 
         self.lb_timestamp1 = Label(self.frameConfTop, text="$ctime", width=25)
         self.en_timestamp1 = Entry(self.frameConfTop)
@@ -662,6 +676,9 @@ class ChargerSim(tk.Tk):
         self.en_idtag1.insert(0, '1031040000069641')
         self.en_idtag2.grid(row=1, column=1)
         self.en_idtag3.grid(row=2, column=1)
+        self.lb_ciphersuite.grid(row=3, column=0, sticky="we")
+        self.lst_ciphersuite.grid(row=3, column=1, columnspan=3, sticky="we")
+
 
         self.lb_timestamp1.grid(row=0, column=2)
         self.lb_timestamp2.grid(row=1, column=2)

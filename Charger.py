@@ -77,6 +77,7 @@ class Config():
         self.bt_direct_send = kwargs['bt_direct_send']
         self.lb_mode_alert = kwargs['lb_mode_alert']
         self.testschem = kwargs['testschem']
+        self.ciphersuite = kwargs['ciphersuite']
 
 class Charger() :
     _transactionId: int
@@ -108,6 +109,7 @@ class Charger() :
         self.bt_direct_send = config.bt_direct_send
         self.lb_mode_alert = config.lb_mode_alert
         self.testschem = config.testschem
+        self.ciphersuite = config.ciphersuite
 
         self.arr_messageid = {
             "$uuid":str(uuid.uuid4()),
@@ -147,6 +149,7 @@ class Charger() :
         self.bt_direct_send = config.bt_direct_send
         self.lb_mode_alert = config.lb_mode_alert
         self.testschem = config.testschem
+        self.ciphersuite = config.ciphersuite
 
     def change_list(self, case, text, attr=None, log=None):
         try:
@@ -172,7 +175,7 @@ class Charger() :
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1 | ssl.OP_NO_TLSv1_3
             ssl_context.set_ciphers(
-            'ECDHE-RSA-AES256-GCM-SHA384'
+                ",".join([self.ciphersuite.get(idx) for idx in self.ciphersuite.curselection()])
             )
             self.ws = await websockets.connect(
                 f'{wss_url}',

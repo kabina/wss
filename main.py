@@ -151,6 +151,36 @@ class ChargerSim(tk.Tk):
         self.curProgress.set(0)
         self.progressbar.update()
 
+    async def standalone(self):
+        # if self.status == 0:
+        #     messagebox.showwarning(title="소켓연결", message="소켓 연결 후 시작 하십시오")
+        #     #     messagebox.showwarning("소켓 연결 후 TC실행 해 주세요", "경고")
+        #     return
+        #
+        # self.status=0
+        self.bt_conn['state'] = tk.NORMAL
+
+        self.config_update()
+        # TC_update()
+        self.en_log.delete(0, END)
+        self.en_status.delete(0, END)
+        self.en_status.insert(0, "Running")
+
+        if not self.TC_selected  :
+            for tc in self.TC_original.keys():
+                for t in self.TC_original[tc]:
+                    self.lst_tc.insert(END, t)
+
+        self.charger = Charger(self.config)
+        await self.charger.standalone(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+        self.en_status.delete(0, END)
+        self.en_status.insert(0, "Test Finished")
+        self.bt_conn['state'] = tk.DISABLED
+        #tkinter.messagebox.showinfo(title="완료", message="TC 수행을 완료했습니다.")
+        self.txt_tc.delete("0.0", END)
+        self.curProgress.set(0)
+        self.progressbar.update()
+
     def directClientSend(self):
         # if self.status == 0:
         #     messagebox.showwarning(title="소켓연결", message="소켓 연결 후 시작 하십시오")
@@ -257,7 +287,7 @@ class ChargerSim(tk.Tk):
 
         schemas = {}
         for msgid in text_item.keys():
-            with open(f"./{self.testschem.get()}/schemas/{msgid}.json", encoding='utf-8') as fd:
+            with open(f"./{self.testschem.get()}/schemas/{msgid}{'Request' if '20' in self.testschem.get() else ''}.json", encoding='utf-8') as fd:
                 schemas['Request'] = json.loads(fd.read())
             with open(f"./{self.testschem.get()}/schemas/{msgid}Response.json", encoding='utf-8') as fd:
                 schemas['Response'] = json.loads(fd.read())
@@ -521,16 +551,15 @@ class ChargerSim(tk.Tk):
         self.en_idtag2 = Entry(self.frameConfTop)
         self.lb_idtag3 = Label(self.frameConfTop, text="idTag3", width=20)
         self.en_idtag3 = Entry(self.frameConfTop)
-        self.lb_ciphersuite = Label(self.frameConfTop, text="CipherSuite", width=20)
+        self.lb_ciphersuite = Label(self.frameConfTop, text="CipherSuite\nBase Local OpenSSL", width=20)
         self.lst_ciphersuite = Listbox(self.frameConfTop, height=10, selectmode="extended", activestyle="none",
                                  exportselection=False, width=50)
         try :
-            with open("./config.json", encoding="utf-8") as fd:
-                self.lst_ciphersuite.delete(0,END)
-                cipers = json.loads(fd.read())["ciphersuite"]
-                for c in cipers :
-                    self.lst_ciphersuite.insert(END, c)
-                self.lst_ciphersuite.select_set(0, tk.END)
+            import ssl
+            context = ssl.create_default_context()
+            for c in [f"{cipher['protocol']},{cipher['name']}" for cipher in context.get_ciphers()] :
+                self.lst_ciphersuite.insert(END, c)
+            self.lst_ciphersuite.select_set(0, tk.END)
         except Exception as e:
             messagebox.showerror(title="구성파일", message="구성파일(config.json) 오류, 파일 존재 및 내용을 확인 하세요")
             self.window.destroy()
@@ -552,6 +581,7 @@ class ChargerSim(tk.Tk):
         self.bt_start = Button(self.bt_frame, text="TC 실행", command=async_handler(self.startEvent), width=15)
         self.bt_reload = Button(self.bt_frame, text="TC Reload", width=15)
         self.bt_close = Button(self.bt_frame, text="시뮬레이터 종료", command=async_handler(self.closeEvent), width=15)
+        self.bt_standalone = Button(self.bt_frame, text="충전기모드", command=async_handler(self.standalone), width=15)
         self.bt_savetc = Button(self.bt_rframe, text="변경TC 저장", width=15, command=self.saveocpp)
         self.bt_direct_send = Button(self.bt_rframe, text="전문직접전송(To 충전기)", width=20, bg="lightgreen", command=self.directClientSend, state="disabled")
         self.lb_save_notice = Label(self.bt_rframe)
@@ -698,6 +728,7 @@ class ChargerSim(tk.Tk):
         self.bt_start.grid(row=1, column=1, ipady=3, pady=3, sticky="w")
         self.bt_reload.grid(row=1, column=2, ipady=3, pady=3, sticky="w")
         self.bt_close.grid(row=1, column=3, ipady=3, pady=3, sticky="E")
+        self.bt_standalone.grid(row=1, column=4, ipady=3, pady=3, sticky="E")
         self.bt_direct_send.grid(row=1, column=1, ipady=3, pady=3, sticky="WE")
         self.bt_savetc.grid(row=1, column=2, ipady=3, pady=3, sticky="WE")
         self.lb_save_notice.grid(row=1, column=0, sticky="e")

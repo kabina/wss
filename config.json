@@ -10,26 +10,6 @@
         "ocpp16/websocket/u+(GENIS)"
 
   ],
-    "ciphersuite": [
-        "ECDHE-RSA-AES256-GCM-SHA384",
-        "ECDHE-RSA-AES128-GCM-SHA256",
-        "DHE-RSA-AES256-GCM-SHA384",
-        "DHE-RSA-AES128-GCM-SHA256",
-        "ECDHE-RSA-AES256-SHA384",
-        "ECDHE-RSA-AES128-SHA256",
-        "ECDHE-RSA-AES256-SHA",
-        "ECDHE-RSA-AES128-SHA",
-        "DHE-RSA-AES256-SHA256",
-        "DHE-RSA-AES128-SHA256",
-        "DHE-RSA-AES256-SHA",
-        "DHE-RSA-AES128-SHA",
-        "AES256-GCM-SHA384",
-        "AES128-GCM-SHA256",
-        "AES256-SHA256",
-        "AES128-SHA256",
-        "AES256-SHA",
-        "AES128-SHA"
-  ],
   "urls": {
     "rest": "https://rgw.devevspcharger.uplus.co.kr/ioc",
     "wss": "wss://ws.devevspcharger.uplus.co.kr"
@@ -98,6 +78,19 @@
         "idTag1": "1031040000069641",
         "idTag2": "1031040000069642",
         "connector": "3",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+      "ocpp20/websocket/standard": {
+        "crgr_sno": "EVSCA050001",
+        "crgr_rsno": "EVSCA050002",
+        "crgr_cid": "115001514011A",
+        "crgr_rcid": "115001514021A",
+        "crgr_mdl": "ELA007C05",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
         "interval1": 3600,
         "interval2": 14400
       },

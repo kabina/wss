@@ -39,7 +39,7 @@
     {
       "connectorId": 1,
       "idTag": "$idTag1",
-      "meterStart": 24000,
+      "meterStart": 100,
       "timestamp": "$ctime"
     }
   ],
@@ -55,7 +55,7 @@
           "timestamp": "$ctime",
           "sampledValue": [
             {
-              "value": "25000",
+              "value": 500,
               "measurand": "Energy.Active.Import.Register",
               "unit": "Wh"
             }

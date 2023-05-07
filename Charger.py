@@ -275,9 +275,10 @@ class Charger() :
     async def sendDocs(self, doc):
 
         await self.ws.send(json.dumps(doc))
-
+        print(doc)
         self.log(f' >> {doc[2]}:{doc}', attr='blue')
-        recv = await self.ws.recv()
+        recv= await self.ws.recv()
+        print(recv)
         jrecv = json.loads(recv)
         if(doc[1] != jrecv[1]):
             await self.process_message(recv)
@@ -463,22 +464,23 @@ class Charger() :
         """
         jmsg = json.loads(msg)
         inprog_name = jmsg[2]
-        print(msg)
         self.rmessageId = jmsg[1]
         self.log(f' << {jmsg[2]}:{msg}', attr='blue')
         senddoc = self.convertSendDoc([f'{inprog_name}Response', {}], options=RESPONSE)
         if inprog_name == "RemoteStopTransaction" and self.charger_status != "Charging":
             senddoc[2]["status"] = "Rejected"
+        elif inprog_name == "GetDiagnostics":
+            senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
         recvdoc = await self.sendReply(senddoc)
 
         return recvdoc
 
     def get_diag_info(self):
         diag_info = ChargerUtil.diag_info
-        diag_info["chargeBoxSerialNumber"] = self.sno
+        diag_info["chargeBoxSerialNumber"] = self.config.sno
         diag_info["chargePointModel"] = self.mdl
         diag_info["vendorErrorCode"] = "ERR - 001"
-
+        return diag_info
 
 
     async def process_message(self, recvdoc):
@@ -488,59 +490,48 @@ class Charger() :
         :param recvdoc:
         :return:
         """
+
         message = json.loads(recvdoc)
-        print(message)
         send_recv_type, message_name = (REQUEST, message[2]) if len(message) == 4 else (RESPONSE, "")
         if send_recv_type == REQUEST:
             # 응답메시지 송신
             await self.post_proc(recvdoc)
-
-            # TriggerMessage인 경우 후속 처리
-            if message_name == "TriggerMessage":
-                print(message_name)
-                message_name = message[3]["requestedMessage"]
-                print(message_name)
-                doc = self.convertSendDoc([message_name, {}])
-                print(doc)
-                recvdoc = await self.sendDocs(doc)
-
             # 후속 처리가 필요한지에 따라 추가 처리
-            for idx, c in enumerate(message_map[message_name]):
-                doc = self.convertSendDoc(c)
-                print(f'cout : {idx}')
-                if c[0] == "MeterValues" :
-                    if self.transactionId > 0 and self.charger_status == "Charging":
-                        doc[3]["meterValue"][0]["sampledValue"][0]["value"] += (1000*idx)
-                        self.charger_meter = doc[3]["meterValue"][0]["sampledValue"][0]["value"]
-                    else:
-                        break
-                elif c[0] == "StopTransaction" :
-                    doc[3]["meterStop"] = self.charger_meter
-                elif c[0] == "StatusNotification" :
-                    self.charger_status = doc[3]["status"]
+            if message_name in message_map :
+                for idx, c in enumerate(message_map[message_name]):
+                    print(c)
+                    doc = self.convertSendDoc(c)
+                    print(f'cout : {idx} total size : {len(message_map[message_name])}')
+                    if c[0] == "MeterValues" :
+                        if self.transactionId > 0 and self.charger_status == "Charging":
+                            doc[3]["meterValue"][0]["sampledValue"][0]["value"] += (1000*idx)
+                            self.charger_meter = doc[3]["meterValue"][0]["sampledValue"][0]["value"]
+                        else:
+                            break
+                    elif c[0] == "StopTransaction" :
+                        doc[3]["meterStop"] = self.charger_meter
+                    elif c[0] == "StatusNotification" :
+                        self.charger_status = doc[3]["status"]
 
-                recvdoc = await self.sendDocs(doc)
-                await asyncio.sleep(5)
-                # asyncio.sleep(30)
-                try:
-                    recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
-                except asyncio.TimeoutError:
-                    print("TimeoutError")
-                    await asyncio.sleep(1)
-                else:
-                    inprog_name = json.loads(recvdoc)[2]
-                    print(recvdoc)
-                    await self.post_proc(recvdoc)
-                    if inprog_name == "Reset":
-                        await self.ws.close()
-                        break
-                    elif inprog_name == "GetDiagnostics":
-                        location = json.loads(recvdoc)[3]["location"]
-                        diaginfo = self.get_diag_info()
-                        response = requests.put(location, data=diaginfo)
+                    print(doc)
+                    recvdoc = await self.sendDocs(doc)
+                    await asyncio.sleep(10)
 
-                    elif inprog_name in message_map:
-                        await self.process_message(recvdoc)
+                    try:
+                        newmsg = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
+                        print(f'newmsg:{newmsg}')
+                        if newmsg :
+                            inprog_name = json.loads(newmsg)[2]
+                            # print(recvdoc)
+                            # await self.post_proc(recvdoc)
+                            if inprog_name == "Reset":
+                                await self.ws.close()
+                                break
+                            else:
+                                await self.process_message(newmsg)
+                    except asyncio.TimeoutError:
+                        print("TimeoutError")
+                        await asyncio.sleep(10)
 
     async def standalone(self, cases):
         """
@@ -577,7 +568,10 @@ class Charger() :
                     """CSMS로부터 Request요청 처리
                     """
                     try :
-                        recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
+                        import requests
+                        recvdoc = await self.ws.recv()
+                        message = json.loads(recvdoc)
+                        message_name = message[2]
                         if recvdoc :
                             await self.process_message(recvdoc)
                             start_time = cur_time
@@ -586,10 +580,24 @@ class Charger() :
                         if start_time - cur_time > self.interval :
                             senddoc = self.convertSendDoc(["Heartbeat",{}])
                             recvdoc = await self.sendDocs(senddoc)
+                        if message_name == "TriggerMessage":
+                            message_name = message[3]["requestedMessage"]
+                            doc = self.convertSendDoc([message_name, {}])
+                            recvdoc = await self.sendDocs(doc)
+                        elif message_name == "GetDiagnostics":
+                            location = message[3]["location"]
+                            diaginfo = self.get_diag_info()
+                            response = requests.put(location, data=json.dumps(diaginfo))
+                        elif message_name == "UpdateFirmware":
+                            location = message[3]["location"]
+                            diaginfo = self.get_diag_info()
+                            response = requests.get(location, data=diaginfo)
                         await asyncio.sleep(1)
                     except asyncio.TimeoutError:
                         await asyncio.sleep(1)
-            except:
+            except Exception as e:
+                import traceback
+                print(traceback.print_exc())
                 await asyncio.sleep(1)
 
         # for idx, case in enumerate(cases.keys()):

@@ -15,6 +15,7 @@ import timeit
 
 import ChargerUtil
 from ChargerUtil import checkSchema, tc_render, message_map, Config
+lock = asyncio.Lock()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ch = logging.StreamHandler()
@@ -273,15 +274,16 @@ class Charger() :
         return doc
 
     async def sendDocs(self, doc):
-
         await self.ws.send(json.dumps(doc))
         print(doc)
         self.log(f' >> {doc[2]}:{doc}', attr='blue')
         recv= await self.ws.recv()
         print(recv)
         jrecv = json.loads(recv)
-        if(doc[1] != jrecv[1]):
-            await self.process_message(recv)
+        if(doc[1] != jrecv[1] and len(jrecv)==4):
+            await self.post_proc(recv)
+            if jrecv[2] in message_map :
+                await self.process_message(recv)
             return jrecv
 
         print(recv)
@@ -495,7 +497,7 @@ class Charger() :
         send_recv_type, message_name = (REQUEST, message[2]) if len(message) == 4 else (RESPONSE, "")
         if send_recv_type == REQUEST:
             # 응답메시지 송신
-            await self.post_proc(recvdoc)
+            # await self.post_proc(recvdoc)
             # 후속 처리가 필요한지에 따라 추가 처리
             if message_name in message_map :
                 for idx, c in enumerate(message_map[message_name]):
@@ -506,6 +508,7 @@ class Charger() :
                         if self.transactionId > 0 and self.charger_status == "Charging":
                             doc[3]["meterValue"][0]["sampledValue"][0]["value"] += (1000*idx)
                             self.charger_meter = doc[3]["meterValue"][0]["sampledValue"][0]["value"]
+                            await asyncio.sleep(5)
                         else:
                             break
                     elif c[0] == "StopTransaction" :
@@ -515,23 +518,23 @@ class Charger() :
 
                     print(doc)
                     recvdoc = await self.sendDocs(doc)
-                    await asyncio.sleep(10)
 
                     try:
-                        newmsg = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
-                        print(f'newmsg:{newmsg}')
-                        if newmsg :
-                            inprog_name = json.loads(newmsg)[2]
-                            # print(recvdoc)
-                            # await self.post_proc(recvdoc)
+                        recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
+                        print(f'newmsg:{recvdoc}')
+                        if recvdoc :
+                            inprog_name = json.loads(recvdoc)[2]
+                            print(recvdoc)
+                            if len(json.loads(recvdoc)) == 4 :
+                                await self.post_proc(recvdoc)
                             if inprog_name == "Reset":
                                 await self.ws.close()
                                 break
                             else:
-                                await self.process_message(newmsg)
+                                await self.process_message(recvdoc)
                     except asyncio.TimeoutError:
                         print("TimeoutError")
-                        await asyncio.sleep(10)
+                        await asyncio.sleep(1)
 
     async def standalone(self, cases):
         """
@@ -569,11 +572,14 @@ class Charger() :
                     """
                     try :
                         import requests
-                        recvdoc = await self.ws.recv()
+                        recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
                         message = json.loads(recvdoc)
                         message_name = message[2]
                         if recvdoc :
-                            await self.process_message(recvdoc)
+                            print(recvdoc)
+                            await self.post_proc(recvdoc)
+                            if message_name in message_map:
+                                await self.process_message(recvdoc)
                             start_time = cur_time
                         """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
                         """

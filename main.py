@@ -581,7 +581,7 @@ class ChargerSim(tk.Tk):
         self.bt_start = Button(self.bt_frame, text="TC 실행", command=async_handler(self.startEvent), width=15)
         self.bt_reload = Button(self.bt_frame, text="TC Reload", width=15)
         self.bt_close = Button(self.bt_frame, text="시뮬레이터 종료", command=async_handler(self.closeEvent), width=15)
-        self.bt_standalone = Button(self.bt_frame, text="충전기모드", command=async_handler(self.standalone), width=15)
+        self.bt_standalone = Button(self.bt_frame, text="충전기모드수행", command=async_handler(self.standalone), width=15)
         self.bt_savetc = Button(self.bt_rframe, text="변경TC 저장", width=15, command=self.saveocpp)
         self.bt_direct_send = Button(self.bt_rframe, text="전문직접전송(To 충전기)", width=20, bg="lightgreen", command=self.directClientSend, state="disabled")
         self.lb_save_notice = Label(self.bt_rframe)

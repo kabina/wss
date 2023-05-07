@@ -207,7 +207,7 @@
     }
   ],
   "ChangeAvailabilityResponse": [
-    2,
+    3,
     "321312312",
     {
       "status": "Accepted"

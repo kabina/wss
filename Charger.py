@@ -12,7 +12,9 @@ import urllib3
 import tkinter as tk
 from tkinter import *
 import timeit
-from ChargerUtil import checkSchema, tc_render
+
+import ChargerUtil
+from ChargerUtil import checkSchema, tc_render, message_map, Config
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ch = logging.StreamHandler()
@@ -42,31 +44,7 @@ logger.propagate = False   # workaround for duplicated logs in ipython
 logger.addHandler(ch)
 
 logging.addLevelName(logging.INFO + 1, 'INFOV')
-message_map = {
-                "BootNotification":[
-                    ["StatusNotification", {"status": "Available"}]
-                ],
-                "RemoteStartTransaction":[
-                    ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
-                    ["StartTransaction",{"idTag": "$idTag1"}],
-                    ["StatusNotification",{"status":"Charging"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                ],
-                "RemoteStopTransaction":[
-                    ["StopTransaction",{"transactionId": "$transactionId"}],
-                    ["StatusNotification", {"status":"Finishing"}],
-                    ["StatusNotification", {"status":"Available"}]
-                ]
-                }
+
 REQUEST = 3
 RESPONSE = 2
 TAGS = {REQUEST:"", RESPONSE:"Response"}
@@ -76,41 +54,12 @@ def change_text(obj, text):
     obj.delete(0, END)
     obj.insert(0, text)
 
-class Config():
-    def __init__(self, **kwargs):
-        self.wss_url = kwargs["wss_url"]
-        self.rest_url = kwargs["rest_url"]
-        self.auth_token = kwargs["auth_token"]
-        self.en_tr = kwargs["en_tr"]
-        self.en_tc = kwargs["en_tc"]
-        self.lst_cases = kwargs["lst_cases"]
-        self.en_status = kwargs["en_status"]
-        self.txt_recv = kwargs["txt_recv"]
-        self.cid = kwargs["cid"]
-        self.rcid = kwargs["rcid"]
-        self.sno = kwargs["sno"]
-        self.rsno  = kwargs["rsno"]
-        self.mdl = kwargs["mdl"]
-        self.result = kwargs["result"]
-        self.confV = kwargs["confV"]
-        self.en_reserve = kwargs["en_reserve"]
-        self.lst_tc = kwargs["lst_tc"]
-        self.test_mode = kwargs["test_mode"]
-        self.ocppdocs = kwargs["ocppdocs"]
-        self.txt_tc = kwargs["txt_tc"]
-        self.progressbar = kwargs["progressbar"]
-        self.curProgress = kwargs["curProgress"]
-        self.bt_direct_send = kwargs['bt_direct_send']
-        self.lb_mode_alert = kwargs['lb_mode_alert']
-        self.testschem = kwargs['testschem']
-        self.ciphersuite = kwargs['ciphersuite']
 
 class Charger() :
-    _transactionId: int
 
     def __init__(self, config):
         self.ws = None
-        self._transactionId = 0
+        self.transactionId = 0
         self.rmessageId = None
         self.logger = logger
         self.config = config
@@ -282,8 +231,8 @@ class Charger() :
         :return: None
         """
         ocpp[1] = self.rmessageId
-        if "transactionId" in ocpp[2] and self._transactionId > 0:
-            ocpp[2]["transactionId"] = self._transactionId
+        if "transactionId" in ocpp[2] and self.transactionId > 0:
+            ocpp[2]["transactionId"] = self.transactionId
         elif "reservationId" in ocpp[2] :
             ocpp[2]["reservationId"]=self.en_reserve
         await self.ws.send(json.dumps(ocpp))
@@ -332,29 +281,31 @@ class Charger() :
         jrecv = json.loads(recv)
         if(doc[1] != jrecv[1]):
             await self.process_message(recv)
-            return recv
+            return jrecv
 
         print(recv)
         self.log(f' << {doc[2]}:{recv}', attr='blue')
 
         # 후처리
         if doc[2]=="StartTransaction" and jrecv[0] == 3 and "transactionId" in jrecv[2]:
-            self._transactionId = jrecv[2]["transactionId"]
+            self.transactionId = jrecv[2]["transactionId"]
             self.confV["$transactionId"] = jrecv[2]["transactionId"]
             self.en_tr.delete(0,END)
             self.en_tr.insert(0,jrecv[2]["transactionId"])
+        elif doc[2]=="StopTransaction":
+            self.transactionId = 0
         elif doc[2]=="BootNotification" :
             self.interval = jrecv[2]["interval"]
         elif doc[2]=="StatusNotification" :
             self.charger_status = doc[3]["status"]
-        return recv
+        return jrecv
 
 
     async def callbackRequest(self, doc):
         rest_url = self.config.rest_url
         import requests, uuid
         if "transactionId" in doc[3] :
-            doc[3]["transactionId"] = self._transactionId
+            doc[3]["transactionId"] = self.transactionId
         doc[1] = f'{str(uuid.uuid4())}'
         self.convertDocs(doc)
         reqdoc = {
@@ -505,6 +456,11 @@ class Charger() :
             self.log(f" {c}", attr='green')
 
     async def post_proc(self, msg):
+        """
+        응답메시지를 만들어서 송신 함
+        :param msg:
+        :return:
+        """
         jmsg = json.loads(msg)
         inprog_name = jmsg[2]
         print(msg)
@@ -517,8 +473,17 @@ class Charger() :
 
         return recvdoc
 
+    def get_diag_info(self):
+        diag_info = ChargerUtil.diag_info
+        diag_info["chargeBoxSerialNumber"] = self.sno
+        diag_info["chargePointModel"] = self.mdl
+        diag_info["vendorErrorCode"] = "ERR - 001"
+
+
+
     async def process_message(self, recvdoc):
         """
+        기본적으로 CSMS에서 요청하는 작업을 수행 함
         충전 중 또는 연결된 작업 진행 중 메시지 수신이 오는 경우 처리 로직(Recursive)
         :param recvdoc:
         :return:
@@ -527,31 +492,53 @@ class Charger() :
         print(message)
         send_recv_type, message_name = (REQUEST, message[2]) if len(message) == 4 else (RESPONSE, "")
         if send_recv_type == REQUEST:
+            # 응답메시지 송신
             await self.post_proc(recvdoc)
-            print(message_name)
-            for idx, c in enumerate(message_map[message_name], start=1):
-                doc = self.convertSendDoc(c)
+
+            # TriggerMessage인 경우 후속 처리
+            if message_name == "TriggerMessage":
+                print(message_name)
+                message_name = message[3]["requestedMessage"]
+                print(message_name)
+                doc = self.convertSendDoc([message_name, {}])
                 print(doc)
+                recvdoc = await self.sendDocs(doc)
+
+            # 후속 처리가 필요한지에 따라 추가 처리
+            for idx, c in enumerate(message_map[message_name]):
+                doc = self.convertSendDoc(c)
+                print(f'cout : {idx}')
                 if c[0] == "MeterValues" :
-                    doc[3]["meterValue"][0]["sampledValue"][0]["value"] += (1000*idx)
-                    self.charger_meter = doc[3]["meterValue"][0]["sampledValue"][0]["value"]
+                    if self.transactionId > 0 and self.charger_status == "Charging":
+                        doc[3]["meterValue"][0]["sampledValue"][0]["value"] += (1000*idx)
+                        self.charger_meter = doc[3]["meterValue"][0]["sampledValue"][0]["value"]
+                    else:
+                        break
                 elif c[0] == "StopTransaction" :
                     doc[3]["meterStop"] = self.charger_meter
                 elif c[0] == "StatusNotification" :
                     self.charger_status = doc[3]["status"]
+
                 recvdoc = await self.sendDocs(doc)
-                await asyncio.sleep(1)
+                await asyncio.sleep(5)
                 # asyncio.sleep(30)
                 try:
-                    recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
+                    recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
                 except asyncio.TimeoutError:
-                    pass
+                    print("TimeoutError")
+                    await asyncio.sleep(1)
                 else:
                     inprog_name = json.loads(recvdoc)[2]
+                    print(recvdoc)
                     await self.post_proc(recvdoc)
                     if inprog_name == "Reset":
                         await self.ws.close()
                         break
+                    elif inprog_name == "GetDiagnostics":
+                        location = json.loads(recvdoc)[3]["location"]
+                        diaginfo = self.get_diag_info()
+                        response = requests.put(location, data=diaginfo)
+
                     elif inprog_name in message_map:
                         await self.process_message(recvdoc)
 
@@ -584,7 +571,6 @@ class Charger() :
                     if (recvdoc[2]["status"] == "Pending") :
                         time.sleep(self.interval)
                     else:
-                        print("STUATUS")
                         doc = self.convertSendDoc(["StatusNotification",{"status":"Available"}])
                         recvdoc = await self.sendDocs(doc)
                 else :
@@ -592,7 +578,6 @@ class Charger() :
                     """
                     try :
                         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
-                        print(recvdoc)
                         if recvdoc :
                             await self.process_message(recvdoc)
                             start_time = cur_time
@@ -603,7 +588,7 @@ class Charger() :
                             recvdoc = await self.sendDocs(senddoc)
                         await asyncio.sleep(1)
                     except asyncio.TimeoutError:
-                        pass
+                        await asyncio.sleep(1)
             except:
                 await asyncio.sleep(1)
 

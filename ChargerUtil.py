@@ -66,3 +66,86 @@ def tc_render(adict, k, value):
         for l in adict:
             tc_render(l, k, value)
     return adict
+
+class Config():
+    def __init__(self, **kwargs):
+        self.wss_url = kwargs["wss_url"]
+        self.rest_url = kwargs["rest_url"]
+        self.auth_token = kwargs["auth_token"]
+        self.en_tr = kwargs["en_tr"]
+        self.en_tc = kwargs["en_tc"]
+        self.lst_cases = kwargs["lst_cases"]
+        self.en_status = kwargs["en_status"]
+        self.txt_recv = kwargs["txt_recv"]
+        self.cid = kwargs["cid"]
+        self.rcid = kwargs["rcid"]
+        self.sno = kwargs["sno"]
+        self.rsno  = kwargs["rsno"]
+        self.mdl = kwargs["mdl"]
+        self.result = kwargs["result"]
+        self.confV = kwargs["confV"]
+        self.en_reserve = kwargs["en_reserve"]
+        self.lst_tc = kwargs["lst_tc"]
+        self.test_mode = kwargs["test_mode"]
+        self.ocppdocs = kwargs["ocppdocs"]
+        self.txt_tc = kwargs["txt_tc"]
+        self.progressbar = kwargs["progressbar"]
+        self.curProgress = kwargs["curProgress"]
+        self.bt_direct_send = kwargs['bt_direct_send']
+        self.lb_mode_alert = kwargs['lb_mode_alert']
+        self.testschem = kwargs['testschem']
+        self.ciphersuite = kwargs['ciphersuite']
+
+diag_info = {
+       "chargeBoxSerialNumber": "ABCD1234",
+       "chargePointModel": "XYZ Model A",
+       "vendorErrorCode": "ERR-001",
+       "diagnosticTroubleCodes": [
+          {
+             "code": "P1234",
+             "description": "Battery voltage is low",
+             "status": "active"
+          },
+          {
+             "code": "P5678",
+             "description": "Communication error with vehicle",
+             "status": "stored"
+          }
+       ]
+    }
+
+message_map = {
+                "BootNotification":[
+                    ["StatusNotification", {"status": "Available"}]
+                ],
+                "RemoteStartTransaction":[
+                    ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
+                    ["StartTransaction",{"idTag": "$idTag1"}],
+                    ["StatusNotification",{"status":"Charging"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId":"$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {"transactionId": "$transactionId"}],
+                ],
+                "RemoteStopTransaction":[
+                    ["StopTransaction",{"transactionId": "$transactionId"}],
+                    ["StatusNotification", {"status":"Finishing"}],
+                    ["StatusNotification", {"status":"Available"}]
+                ]
+                }

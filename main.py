@@ -35,7 +35,8 @@ class ChargerSim(tk.Tk):
         self.ConfV = {'$idTag1': self.en_idtag1.get(), '$idTag2': self.en_idtag2.get(), '$idTag3': self.en_idtag3.get(),'$idTag': self.en_idtag1.get(),
                       '$ctime': datetime.now().isoformat(sep='T', timespec='seconds')+'Z', '$ctime+$interval1': self.interval1,
                       '$ctime+$interval2': self.interval2, '$crgr_mdl':self.en_mdl.get(), '$crgr_sno':self.en_sno.get(),
-                      '$crgr_rsno':self.en_rsno.get(), '$uuid':str(uuid.uuid4()), '$transactionId':self.en_tr.get(), '$reservationId':self.en_reserve.get(), '$connector':self.en_connector.get()}
+                      '$crgr_rsno':self.en_rsno.get(), '$uuid':str(uuid.uuid4()), '$transactionId':self.en_tr.get(), '$reservationId':self.en_reserve.get(),
+                      '$connector':self.en_connector.get(), '$meter':self.en_meter.get()}
 
         self.config = Config(wss_url=self.en_url.get(),
                         rest_url=self.en_rest_url.get(),
@@ -62,7 +63,8 @@ class ChargerSim(tk.Tk):
                         bt_direct_send=self.bt_direct_send,
                         lb_mode_alert=self.lb_mode_alert,
                         testschem=self.testschem,
-                        ciphersuite=self.lst_ciphersuite
+                        ciphersuite=self.lst_ciphersuite,
+                        en_meter = self.en_meter
                         )
 
     def tcload_callback(self):
@@ -527,6 +529,9 @@ class ChargerSim(tk.Tk):
         self.en_reserve = Entry(self.frameHat)
         self.lb_connector = Label(self.frameHat, text="connector", width=5)
         self.en_connector = Entry(self.frameHat)
+        self.lb_meter = Label(self.frameHat, text="meter", width=5)
+        self.en_meter = Entry(self.frameHat)
+        self.en_meter.insert(0, "0")
         self.lb_status = Label(self.frameHat, text="Status", width=5)
         self.en_status = Entry(self.frameHat)
         self.lb_url_comp = Label(self.frameTop, text=self.en_url.get()+"/"+self.en_mdl.get()+"/"+self.en_sno.get())
@@ -663,6 +668,8 @@ class ChargerSim(tk.Tk):
         self.en_status.grid(row=1, column=9, sticky="we")
         self.lb_connector.grid(row=2, column=0, sticky="we")
         self.en_connector.grid(row=2, column=1, sticky="we")
+        self.lb_meter.grid(row=2, column=2, sticky="we")
+        self.en_meter.grid(row=2, column=3, sticky="we")
         self.vtc_mode1.configure(command=self.show_txt_tc)
         self.vtc_mode2.configure(command=self.show_txt_tc_rendered)
         self.lb_url.grid(row=3, column=0, sticky="we")

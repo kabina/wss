@@ -40,7 +40,7 @@ def checkSchema(original, target, schema):
 #         for l in adict:
 #             tc_render(l, k, value)
 #     return adict
-
+from datetime import datetime
 def tc_render(adict, k, value):
     """
     dict내 value내에 특정 키워드'%keyword'를 찾아 이를 value로 대체
@@ -53,11 +53,16 @@ def tc_render(adict, k, value):
         "reservationId":int,
         "connectorId":int
     }
+    refreshv = {'$ctime':datetime.now().isoformat(sep='T', timespec='seconds')+'Z'}
+
     if isinstance(adict, dict):
         for key in adict.keys():
             if adict[key] == k:
                 try:
-                    adict[key] = typeconv[key](value) if key in typeconv else value
+                    if k in refreshv :
+                        adict[key] = refreshv[k]
+                    else:
+                        adict[key] = typeconv[key](value) if key in typeconv else value
                 except ValueError:
                     pass  # do nothing if the timestamp is already in the correct format
             elif isinstance(adict[key], (dict, list)):
@@ -95,6 +100,7 @@ class Config():
         self.lb_mode_alert = kwargs['lb_mode_alert']
         self.testschem = kwargs['testschem']
         self.ciphersuite = kwargs['ciphersuite']
+        self.en_meter = kwargs['en_meter']
 
 diag_info = {
        "chargeBoxSerialNumber": "ABCD1234",
@@ -118,33 +124,38 @@ message_map = {
                 "BootNotification":[
                     ["StatusNotification", {"status": "Available"}]
                 ],
+                "Reset": [
+                    ["BootNotification", {}],
+                    ["StatusNotification", {"status": "Available"}]
+                ],
                 "RemoteStartTransaction":[
                     ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
-                    ["StartTransaction",{"idTag": "$idTag1"}],
+                    ["StartTransaction",{}],
                     ["StatusNotification",{"status":"Charging"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId":"$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
-                    ["MeterValues", {"transactionId": "$transactionId"}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}],
+                    ["MeterValues", {}]
                 ],
                 "RemoteStopTransaction":[
-                    ["StopTransaction",{"transactionId": "$transactionId"}],
+                    ["StopTransaction",{}],
                     ["StatusNotification", {"status":"Finishing"}],
                     ["StatusNotification", {"status":"Available"}]
                 ]

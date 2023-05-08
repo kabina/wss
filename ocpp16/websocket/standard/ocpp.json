@@ -39,7 +39,7 @@
     {
       "connectorId": 1,
       "idTag": "$idTag1",
-      "meterStart": 100,
+      "meterStart": "$meter",
       "timestamp": "$ctime"
     }
   ],
@@ -49,13 +49,13 @@
     "MeterValues",
     {
       "connectorId": 1,
-      "transactionId": 120533559,
+      "transactionId": "$transactionId",
       "meterValue": [
         {
           "timestamp": "$ctime",
           "sampledValue": [
             {
-              "value": 500,
+              "value": "$meter",
               "measurand": "Energy.Active.Import.Register",
               "unit": "Wh"
             }
@@ -69,9 +69,9 @@
     "1677228103",
     "StopTransaction",
     {
-      "meterStop": 29000,
+      "meterStop": "$meter",
       "timestamp": "$ctime",
-      "transactionId": 120533844
+      "transactionId": "$transactionId"
     }
   ],
   "ClearCache": [

@@ -1,0 +1,1 @@
+{"chargeBoxSerialNumber": "EVSCA050001", "chargePointModel": "ELA007C05", "vendorErrorCode": "ERR - 001", "diagnosticTroubleCodes": [{"code": "P1234", "description": "Battery voltage is low", "status": "active"}, {"code": "P5678", "description": "Communication error with vehicle", "status": "stored"}]}

@@ -95,8 +95,8 @@
         "interval2": 14400
       },
                  "ocpp16/websocket/u+(GENIS)": {
-        "crgr_sno": "GK-0223",
-        "crgr_rsno": "GK-0223",
+        "crgr_sno": "313154200",
+        "crgr_rsno": "313154200",
         "crgr_cid": "115001536011A",
         "crgr_rcid": "115001536011A",
         "crgr_mdl": "GK-SMC-AC-7",

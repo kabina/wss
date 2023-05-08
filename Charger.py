@@ -86,7 +86,7 @@ class Charger() :
         self.lb_mode_alert = config.lb_mode_alert
         self.testschem = config.testschem
         self.ciphersuite = config.ciphersuite
-        self.charger_meter = 0
+        self.en_meter = config.en_meter
 
         self.arr_messageid = {
             "$uuid":str(uuid.uuid4()),
@@ -96,7 +96,8 @@ class Charger() :
         from datetime import datetime
         if attr:
             self.txt_recv.tag_config(attr, foreground=attr)
-        self.txt_recv.insert(END, datetime.now().isoformat() +' '+ log + '\n', attr)
+        if log :
+            self.txt_recv.insert(END, datetime.now().isoformat() +' '+ log + '\n', attr)
 
     def change_result(self, idx, res):
         self.result[idx] = res
@@ -128,6 +129,7 @@ class Charger() :
         self.testschem = config.testschem
         self.ciphersuite = config.ciphersuite
         self.interval = 600
+        self.en_meter = config.en_meter
 
     def change_list(self, case, text, attr=None, log=None):
         try:
@@ -255,7 +257,8 @@ class Charger() :
         :param ocpp:
         :return:
         """
-
+        self.confV["$meter"] = self.en_meter.get()
+        self.confV["$transactionId"] = self.en_tr.get()
         doc = json.loads(self.ocppdocs)[ocpp[0]]
         """전문 템플릿 변환"""
 
@@ -278,30 +281,32 @@ class Charger() :
         print(doc)
         self.log(f' >> {doc[2]}:{doc}', attr='blue')
         recv= await self.ws.recv()
-        print(recv)
-        jrecv = json.loads(recv)
-        if(doc[1] != jrecv[1] and len(jrecv)==4):
-            await self.post_proc(recv)
-            if jrecv[2] in message_map :
-                await self.process_message(recv)
+        if recv :
+            print(recv)
+            jrecv = json.loads(recv)
+            if(doc[1] != jrecv[1] and len(jrecv)==4):
+                await self.post_proc(recv)
+                if jrecv[2] in message_map :
+                    await self.process_message(recv)
+                #return jrecv
+
+            print(recv)
+            self.log(f' << {doc[2]}:{recv}', attr='blue')
+
+            # 후처리
+            if doc[2]=="StartTransaction" and jrecv[0] == 3 and "transactionId" in jrecv[2]:
+                self.transactionId = jrecv[2]["transactionId"]
+                self.confV["$transactionId"] = jrecv[2]["transactionId"]
+                self.en_tr.delete(0,END)
+                self.en_tr.insert(0,jrecv[2]["transactionId"])
+                self.confV["$transactionId"] = self.transactionId
+            elif doc[2]=="StopTransaction":
+                self.transactionId = 0
+            elif doc[2]=="BootNotification" :
+                self.interval = jrecv[2]["interval"]
+            elif doc[2]=="StatusNotification" :
+                self.charger_status = doc[3]["status"]
             return jrecv
-
-        print(recv)
-        self.log(f' << {doc[2]}:{recv}', attr='blue')
-
-        # 후처리
-        if doc[2]=="StartTransaction" and jrecv[0] == 3 and "transactionId" in jrecv[2]:
-            self.transactionId = jrecv[2]["transactionId"]
-            self.confV["$transactionId"] = jrecv[2]["transactionId"]
-            self.en_tr.delete(0,END)
-            self.en_tr.insert(0,jrecv[2]["transactionId"])
-        elif doc[2]=="StopTransaction":
-            self.transactionId = 0
-        elif doc[2]=="BootNotification" :
-            self.interval = jrecv[2]["interval"]
-        elif doc[2]=="StatusNotification" :
-            self.charger_status = doc[3]["status"]
-        return jrecv
 
 
     async def callbackRequest(self, doc):
@@ -466,6 +471,9 @@ class Charger() :
         """
         jmsg = json.loads(msg)
         inprog_name = jmsg[2]
+        if len(jmsg)==3 or isinstance(inprog_name,dict) or inprog_name not in self.ocppdocs :
+            self.log(f' << {msg}', attr='blue')
+            return None
         self.rmessageId = jmsg[1]
         self.log(f' << {jmsg[2]}:{msg}', attr='blue')
         senddoc = self.convertSendDoc([f'{inprog_name}Response', {}], options=RESPONSE)
@@ -478,6 +486,8 @@ class Charger() :
         return recvdoc
 
     def get_diag_info(self):
+        """충전기 진단 메시지 생성
+        """
         diag_info = ChargerUtil.diag_info
         diag_info["chargeBoxSerialNumber"] = self.config.sno
         diag_info["chargePointModel"] = self.mdl
@@ -492,7 +502,6 @@ class Charger() :
         :param recvdoc:
         :return:
         """
-
         message = json.loads(recvdoc)
         send_recv_type, message_name = (REQUEST, message[2]) if len(message) == 4 else (RESPONSE, "")
         if send_recv_type == REQUEST:
@@ -506,13 +515,14 @@ class Charger() :
                     print(f'cout : {idx} total size : {len(message_map[message_name])}')
                     if c[0] == "MeterValues" :
                         if self.transactionId > 0 and self.charger_status == "Charging":
-                            doc[3]["meterValue"][0]["sampledValue"][0]["value"] += (1000*idx)
-                            self.charger_meter = doc[3]["meterValue"][0]["sampledValue"][0]["value"]
+                            doc[3]["meterValue"][0]["sampledValue"][0]["value"] =  str(int(self.en_meter.get()) + 999)
+                            self.en_meter.delete(0,END)
+                            self.en_meter.insert(0,doc[3]["meterValue"][0]["sampledValue"][0]["value"])
                             await asyncio.sleep(5)
                         else:
                             break
                     elif c[0] == "StopTransaction" :
-                        doc[3]["meterStop"] = self.charger_meter
+                        doc[3]["meterStop"] = self.en_meter.get()
                     elif c[0] == "StatusNotification" :
                         self.charger_status = doc[3]["status"]
 
@@ -547,13 +557,13 @@ class Charger() :
         cur_idx = self.lst_cases.curselection()
         cur_idx = cur_idx[0] if cur_idx else 0
         self.lst_cases.selection_clear(cur_idx+1,END)
-        import time
+        import time, requests
         start_time = time.time()
 
         while(True) :
             try:
                 cur_time = time.time()
-                if (start_time - cur_time ) < 1 :
+                if (cur_time - start_time ) < 1 :
                     time.sleep(1)
 
                 """충전기 최초 부팅 후 StatusNotification까지 수행
@@ -571,7 +581,6 @@ class Charger() :
                     """CSMS로부터 Request요청 처리
                     """
                     try :
-                        import requests
                         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
                         message = json.loads(recvdoc)
                         message_name = message[2]
@@ -581,11 +590,7 @@ class Charger() :
                             if message_name in message_map:
                                 await self.process_message(recvdoc)
                             start_time = cur_time
-                        """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
-                        """
-                        if start_time - cur_time > self.interval :
-                            senddoc = self.convertSendDoc(["Heartbeat",{}])
-                            recvdoc = await self.sendDocs(senddoc)
+
                         if message_name == "TriggerMessage":
                             message_name = message[3]["requestedMessage"]
                             doc = self.convertSendDoc([message_name, {}])
@@ -593,14 +598,45 @@ class Charger() :
                         elif message_name == "GetDiagnostics":
                             location = message[3]["location"]
                             diaginfo = self.get_diag_info()
-                            response = requests.put(location, data=json.dumps(diaginfo))
+                            filename = location.split('?')[0].split('/')[-1]
+                            with open(filename, "w") as fd:
+                                fd.write(json.dumps(diaginfo))
+
+                            header = {
+                                "Content-Type": "text/plain",
+                                "Accept":"*/*",
+                                "Slug": filename
+                            }
+                            response = requests.put(location, files={'file': json.dumps(diaginfo)}, headers=header)
+
                         elif message_name == "UpdateFirmware":
                             location = message[3]["location"]
-                            diaginfo = self.get_diag_info()
-                            response = requests.get(location, data=diaginfo)
+                            response = firmware = requests.get(location)
+                            if response.status_code == 200:
+                                # Content-Disposition 헤더에서 파일명 추출
+                                content_disposition = response.headers.get("content-disposition")
+                                filename_match = re.search("filename=\"(.+)\"", content_disposition)
+
+                                if filename_match:
+                                    filename = filename_match.group(1)
+                                else:
+                                    filename = "firmware_downloaded_file"
+                                with open(filename, "wb") as f:
+                                    f.write(response.content)
+
+                                print("파일 다운로드 완료:", filename)
+                            else:
+                                print("파일 다운로드 실패:", response.status_code)
                         await asyncio.sleep(1)
                     except asyncio.TimeoutError:
-                        await asyncio.sleep(1)
+                        await asyncio.sleep(2)
+                        """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
+                        """
+                        if (cur_time - start_time) > self.interval :
+                            senddoc = self.convertSendDoc(["Heartbeat",{}])
+                            recvdoc = await self.sendDocs(senddoc)
+                            start_time = cur_time
+
             except Exception as e:
                 import traceback
                 print(traceback.print_exc())

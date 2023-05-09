@@ -305,6 +305,7 @@ class Charger() :
                 self.transactionId = 0
             elif doc[2]=="BootNotification" :
                 self.interval = jrecv[2]["interval"]
+                self.charger_configuration["HeartbeatInterval"] = self.interval
             elif doc[2]=="StatusNotification" :
                 self.charger_status = doc[3]["status"]
             return jrecv

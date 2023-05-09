@@ -1,4 +1,6 @@
 import jsonschema, json
+from datetime import datetime
+
 def checkSchema(original, target, schema):
     """
     OCPP 규격과 다른지 체크, 다를 경우 False Return
@@ -15,32 +17,16 @@ def checkSchema(original, target, schema):
         return False, e.message
     return True, None
 
-# def tc_render(adict, k, value):
-#     """
-#     dict내 value내에 특정 키워드'%keyword'를 찾아 이를 value로 대체
-#     :param adict: 키워드(k)를 찾을 대상 dictionary
-#     :param k: value로 대체하고자 하는는 $로 시작하는 값
-#     :param value: $로 시작되는 키워드를 대체할 값
-#     :return: rendering된 값 adict
-#     """
-#     typeconv = {
-#         "reservationId":int
-#     }
-#     if isinstance(adict, dict):
-#         for key in adict.keys():
-#             if adict[key] == k:
-#                 try:
-#                     adict[key] = value if key not in typeconv else typeconv[key](value)
-#                     #if adict[key] not in typeconv else typeconv[adict[key]](value)
-#                 except ValueError:
-#                     pass  # do nothing if the timestamp is already in the correct format
-#             elif isinstance(adict[key], (dict, list)):
-#                 tc_render(adict[key], k, value)
-#     elif isinstance(adict, list):
-#         for l in adict:
-#             tc_render(l, k, value)
-#     return adict
-from datetime import datetime
+
+DataTransferMessage = {
+    "chargeValue": {
+        "connectorId":1, "idTag":"$idTag", "timestamp":"$ctime", "transactionId":"$transactionId"
+    },
+    "chargeValueResponse":{
+        "status":"Accepted", "data":{"watt":1000, "cost":100, "cabletype":""}
+    }
+}
+
 def tc_render(adict, k, value):
     """
     dict내 value내에 특정 키워드'%keyword'를 찾아 이를 value로 대체
@@ -132,6 +118,7 @@ message_map = {
                 ],
                 "RemoteStartTransaction":[
                     ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
+                    ["DataTransfer", {"messageId":"chargeValue", "connectorId":1, "idTag":"$idTag", "timestamp":"$ctime"}],
                     ["StartTransaction",{}],
                     ["StatusNotification",{"status":"Charging"}],
                     ["MeterValues", {}],

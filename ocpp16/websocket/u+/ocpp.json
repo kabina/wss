@@ -418,9 +418,9 @@
     "321312312",
     "DataTransfer",
     {
-      "vendorId": "ChungAng",
-      "messageId": "TEST",
-      "data": "Test Data"
+      "vendorId": "EVAR",
+      "messageId": "",
+      "data": {}
     }
   ],
     "DataTransferResponse": [

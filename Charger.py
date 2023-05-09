@@ -14,7 +14,7 @@ from tkinter import *
 import timeit
 
 import ChargerUtil
-from ChargerUtil import checkSchema, tc_render, message_map, Config
+from ChargerUtil import checkSchema, tc_render, message_map, Config, DataTransferMessage
 lock = asyncio.Lock()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -250,6 +250,16 @@ class Charger() :
             tc_render(doc, k, self.confV[k])
         return doc
 
+    def convertDTDocs(self, doc, messageid):
+        """
+        DataTransfer Message처리
+        :param doc:
+        :return:
+        """
+        for k in self.confV:
+            dt_render(DataTransferMessage[messageid], k, self.confV[k])
+        return doc
+
     def convertSendDoc(self, ocpp, options=REQUEST) -> dict:
         """
         송신전문 변환
@@ -275,6 +285,13 @@ class Charger() :
             doc[1] = self.arr_messageid[doc[1]]
         else :
             doc[1] = f'{str(uuid.uuid4())}'
+
+        """ doc가 datatransfer인 경우 문서 추가 렌더링"""
+        if "messageId" in ocpp[1] :
+            ddoc = ocpp[1]
+            for k in self.confV:
+                tc_render(ddoc, k, self.confV[k])
+            doc[3]["data"] = ddoc
 
         return doc
 
@@ -489,7 +506,7 @@ class Charger() :
         elif inprog_name == "GetDiagnostics":
             senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
         elif inprog_name in ("GetConfiguration", "SetConfiguration"):
-            keys = jrecvdoc[3]["key"]
+            keys = jmsg[3]["key"]
             charger_configuration_keys = self.charger_configuration.keys()
             key_list = []
             send_conf_keys = {}

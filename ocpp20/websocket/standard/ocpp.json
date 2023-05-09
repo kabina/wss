@@ -5,8 +5,7 @@
     "BootNotification",
     {
       "chargePointModel": "$crgr_mdl",
-      "chargePointVendor": "EVAR",
-      "chargePointSerialNumber": "$crgr_sno"
+      "chargePointVendor": "EVAR"
     }
   ],
   "StatusNotification": [
@@ -14,20 +13,16 @@
     "$uuid",
     "StatusNotification",
     {
-      "connectorId": 1,
+      "connectorId": "$connector",
       "errorCode": "NoError",
       "status": "Available"
     }
   ],
-  "HeartBeat": [
+  "Heartbeat": [
     2,
     "19223201",
-    "DataTransfer",
-    {
-      "vendorId": "EVAR",
-      "messageId": "heartbeat",
-      "data": {}
-    }
+    "Heartbeat",
+    {}
   ],
   "Authorize": [
     2,
@@ -39,7 +34,7 @@
   ],
   "StartTransaction": [
     2,
-    "1677223618",
+    "167722361",
     "StartTransaction",
     {
       "connectorId": 1,
@@ -54,7 +49,7 @@
     "MeterValues",
     {
       "connectorId": 1,
-      "transactionId": 120532006,
+      "transactionId": 120533559,
       "meterValue": [
         {
           "timestamp": "$ctime",
@@ -76,7 +71,7 @@
     {
       "meterStop": 29000,
       "timestamp": "$ctime",
-      "transactionId": 120532006
+      "transactionId": 120533844
     }
   ],
   "ClearCache": [
@@ -294,7 +289,7 @@
       "connectorId": 1,
       "expiryDate": "",
       "idTag": "$idTag1",
-      "reservationId": ""
+      "reservationId": "$reservationId"
     }
   ],
   "ReserveNowResponse": [
@@ -309,11 +304,11 @@
     "321312312",
     "CancelReservation",
     {
-      "reservationId": ""
+      "reservationId": "$reservationId"
     }
   ],
   "CancelReservationResponse": [
-    2,
+    3,
     "321312312",
     {
       "status": ""
@@ -328,7 +323,7 @@
     }
   ],
   "TriggerMessageResponse": [
-    2,
+    3,
     "321312312",
     {
       "status": "Accepted"
@@ -405,7 +400,22 @@
     {
       "status": "Accepted"
     }
+  ],
+  "DataTransfer": [
+    2,
+    "321312312",
+    "DataTransfer",
+    {
+      "vendorId": "ChungAng",
+      "messageId": "TEST",
+      "data": "Test Data"
+    }
+  ],
+    "DataTransferResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
   ]
 }
-
-""

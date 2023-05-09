@@ -64,6 +64,8 @@ def tc_render(adict, k, value):
                     else:
                         adict[key] = typeconv[key](value) if key in typeconv else value
                 except ValueError:
+                    print(f"Rendering Error {adict[key]} assigned with ''")
+                    adict[key] = ""
                     pass  # do nothing if the timestamp is already in the correct format
             elif isinstance(adict[key], (dict, list)):
                 tc_render(adict[key], k, value)

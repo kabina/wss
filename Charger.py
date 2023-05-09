@@ -87,6 +87,7 @@ class Charger() :
         self.testschem = config.testschem
         self.ciphersuite = config.ciphersuite
         self.en_meter = config.en_meter
+        self.interval = 300
 
         self.arr_messageid = {
             "$uuid":str(uuid.uuid4()),
@@ -479,11 +480,15 @@ class Charger() :
         self.rmessageId = jmsg[1]
         self.log(f' << {jmsg[2]}:{msg}', attr='blue')
         senddoc = self.convertSendDoc([f'{inprog_name}Response', {}], options=RESPONSE)
-        if inprog_name == "RemoteStopTransaction" and self.charger_status != "Charging":
+        if inprog_name == "RemoteStartTransaction" and self.charger_status != "Charging":
             senddoc[2]["status"] = "Rejected"
+            self.transactionId = int (jmsg[3]["chargingProfile"]["transactionId"])
+            self.en_tr.delete(0,END)
+            self.en_tr.insert(0, self.transactionId)
+
         elif inprog_name == "GetDiagnostics":
             senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
-        elif inprog_name not in ("GetConfiguration", "SetConfiguration"):
+        elif inprog_name in ("GetConfiguration", "SetConfiguration"):
             keys = jrecvdoc[3]["key"]
             charger_configuration_keys = self.charger_configuration.keys()
             key_list = []
@@ -523,14 +528,14 @@ class Charger() :
             # 후속 처리가 필요한지에 따라 추가 처리
             if message_name in message_map :
                 for idx, c in enumerate(message_map[message_name]):
-                    print(c)
                     doc = self.convertSendDoc(c)
                     print(f'cout : {idx} total size : {len(message_map[message_name])}')
                     if c[0] == "MeterValues" :
                         if self.transactionId > 0 and self.charger_status == "Charging":
-                            doc[3]["meterValue"][0]["sampledValue"][0]["value"] =  str(int(self.en_meter.get()) + 999)
-                            self.en_meter.delete(0,END)
-                            self.en_meter.insert(0,doc[3]["meterValue"][0]["sampledValue"][0]["value"])
+                            v = int(self.en_meter.get()) + 999
+                            self.en_meter.delete(0, END)
+                            self.en_meter.insert(0, v)
+                            doc[3]["meterValue"][0]["sampledValue"][0]["value"] = str(v)
                             await asyncio.sleep(5)
                         else:
                             break
@@ -539,8 +544,14 @@ class Charger() :
                     elif c[0] == "StatusNotification" :
                         self.charger_status = doc[3]["status"]
 
-                    print(doc)
-                    recvdoc = await self.sendDocs(doc)
+
+                    print(f'doc:{doc}')
+                    jrecv = await self.sendDocs(doc)
+                    print(f'jrecv:{jrecv}')
+                    """CSMS로 요청 후 리턴값에 대한 예외 처리"""
+                    if jrecv and c[0] in ("Authorize", "StartTransaction", "StopTransaction") and c[1]==jrecv[1] and jrecv[2]["idTagInfo"]["status"] != "Accepted" :
+                        self.log("Auth, Start, Stop 오류")
+                        break
 
                     try:
                         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
@@ -554,8 +565,6 @@ class Charger() :
                             if inprog_name == "Reset":
                                 await self.ws.close()
                                 break
-
-
                             else:
                                 await self.process_message(recvdoc)
                     except asyncio.TimeoutError:
@@ -644,6 +653,7 @@ class Charger() :
                                 print("파일 다운로드 완료:", filename)
                             else:
                                 print("파일 다운로드 실패:", response.status_code)
+
                         await asyncio.sleep(1)
                     except asyncio.TimeoutError:
                         await asyncio.sleep(2)

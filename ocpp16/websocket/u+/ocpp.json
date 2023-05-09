@@ -58,7 +58,7 @@
     "MeterValues",
     {
       "connectorId": 1,
-      "transactionId": 120533559,
+      "transactionId": "$transactionId",
       "meterValue": [
         {
           "timestamp": "$ctime",
@@ -80,7 +80,7 @@
     {
       "meterStop": "$meter",
       "timestamp": "$ctime",
-      "transactionId": 120533844,
+      "transactionId": "$transactionId",
       "reason": "Finished"
     }
   ],
@@ -136,7 +136,7 @@
     "321312312",
     "RemoteStopTransaction",
     {
-      "transactionId": 12321,
+      "transactionId": "$transactionId",
       "idTag": "$idTag",
       "chargingProfile": ""
     }

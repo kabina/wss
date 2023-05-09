@@ -92,6 +92,7 @@ class Charger() :
             "$uuid":str(uuid.uuid4()),
             "$timestamp":datetime.now().isoformat(sep="T", timespec="seconds")+'Z'
         }
+        self.charger_configuration = json.loads(open("config.json","r").read())
     def log(self, log, attr=None):
         from datetime import datetime
         if attr:
@@ -481,6 +482,17 @@ class Charger() :
             senddoc[2]["status"] = "Rejected"
         elif inprog_name == "GetDiagnostics":
             senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
+        elif inprog_name not in ("GetConfiguration", "SetConfiguration"):
+            keys = jrecvdoc[3]["key"]
+            charger_configuration_keys = self.charger_configuration.keys()
+            key_list = []
+            send_conf_keys = {}
+            for k in keys:
+                if k in charger_configuration_keys:
+                    send_conf_keys["key"] = k
+                    send_conf_keys["readonly"] = "false"
+                    key_list.append(send_conf_keys)
+                senddoc[3]["ConfigurationKey"] = key_list
         recvdoc = await self.sendReply(senddoc)
 
         return recvdoc
@@ -534,12 +546,15 @@ class Charger() :
                         print(f'newmsg:{recvdoc}')
                         if recvdoc :
                             inprog_name = json.loads(recvdoc)[2]
+                            jrecvdoc = json.loads(recvdoc)
                             print(recvdoc)
                             if len(json.loads(recvdoc)) == 4 :
                                 await self.post_proc(recvdoc)
                             if inprog_name == "Reset":
                                 await self.ws.close()
                                 break
+
+
                             else:
                                 await self.process_message(recvdoc)
                     except asyncio.TimeoutError:
@@ -607,23 +622,24 @@ class Charger() :
                                 "Accept":"*/*",
                                 "Slug": filename
                             }
+
                             response = requests.put(location, files={'file': json.dumps(diaginfo)}, headers=header)
 
                         elif message_name == "UpdateFirmware":
+                            import re
+                            filename = "firmware_downloaded_file"
                             location = message[3]["location"]
-                            response = firmware = requests.get(location)
-                            if response.status_code == 200:
-                                # Content-Disposition 헤더에서 파일명 추출
-                                content_disposition = response.headers.get("content-disposition")
-                                filename_match = re.search("filename=\"(.+)\"", content_disposition)
+                            header = {
+                                "Content-Type": "application/json"
+                            }
+                            response = requests.get(location, allow_redirects=False, verify=False)
+                            original_url = response.headers.get('Location')
+                            filename = original_url.split("?")[0].split("/")[-1]
 
-                                if filename_match:
-                                    filename = filename_match.group(1)
-                                else:
-                                    filename = "firmware_downloaded_file"
+                            response = firmware = requests.get(location, headers=header, verify=False)
+                            if response.status_code == 200:
                                 with open(filename, "wb") as f:
                                     f.write(response.content)
-
                                 print("파일 다운로드 완료:", filename)
                             else:
                                 print("파일 다운로드 실패:", response.status_code)

@@ -14,7 +14,7 @@ def checkSchema(original, target, schema):
         schema = open(f"./{schema}/schemas/" + original + ".json").read().encode('utf-8')
         jsonschema.validate(instance=target, schema=json.loads(schema))
     except jsonschema.exceptions.ValidationError as e:
-        return False, e.message
+        return False, e.message, target
     return True, None
 
 
@@ -37,7 +37,10 @@ def tc_render(adict, k, value):
     """
     typeconv = {
         "reservationId":int,
-        "connectorId":int
+        "connectorId":int,
+        "meterStart": int,
+        "transactionId": int,
+        "meterStop": int
     }
     refreshv = {'$ctime':datetime.now().isoformat(sep='T', timespec='seconds')+'Z'}
 
@@ -89,6 +92,7 @@ class Config():
         self.testschem = kwargs['testschem']
         self.ciphersuite = kwargs['ciphersuite']
         self.en_meter = kwargs['en_meter']
+        self.en_vendor = kwargs['en_vendor']
 
 diag_info = {
        "chargeBoxSerialNumber": "ABCD1234",

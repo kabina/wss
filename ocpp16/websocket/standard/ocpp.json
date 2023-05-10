@@ -5,7 +5,7 @@
     "BootNotification",
     {
       "chargePointModel": "$crgr_mdl",
-      "chargePointVendor": "EVAR"
+      "chargePointVendor": "$vendor"
     }
   ],
   "StatusNotification": [
@@ -406,7 +406,7 @@
     "321312312",
     "DataTransfer",
     {
-      "vendorId": "EVAR",
+      "vendorId": "$vendor",
       "messageId": "",
       "data": {}
     }

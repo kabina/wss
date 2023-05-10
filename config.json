@@ -2,6 +2,7 @@
   "testschem": [
         "ocpp16/websocket/standard",
         "ocpp16/websocket/u+",
+        "ocpp16/websocket/u+(RESERVED)",
         "ocpp16/websocket/u+(evar)",
         "ocpp16/websocket/u+(HV)",
         "ocpp20/websocket/standard",
@@ -17,6 +18,7 @@
   "properties": {
     "protocol": {
       "ocpp16/websocket/standard": {
+        "vendor":"EVAR",
         "crgr_sno": "EVSCA050001",
         "crgr_rsno": "EVSCA050002",
         "crgr_cid": "115001514011A",
@@ -30,6 +32,7 @@
         "interval2": 14400
       },
       "ocpp16/websocket/u+": {
+        "vendor": "EVAR",
         "crgr_sno": "EVSCA070007",
         "crgr_rsno": "EVSCA070007",
         "crgr_cid": "115001513031A",
@@ -42,7 +45,22 @@
         "interval1": 3600,
         "interval2": 14400
       },
+            "ocpp16/websocket/u+(RESERVED)": {
+        "vendor": "EVAR",
+        "crgr_sno": "EVSCA070008",
+        "crgr_rsno": "EVSCA070008",
+        "crgr_cid": "115001513041A",
+        "crgr_rcid": "115001513041A",
+        "crgr_mdl": "ELA007C01",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
+        "interval1": 3600,
+        "interval2": 14400
+      },
       "ocpp16/websocket/u+(evar)": {
+        "vendor": "EVAR",
         "crgr_sno": "EVSCA0101629",
         "crgr_rsno": "EVSCA0101629",
         "crgr_cid": "411310106011A",
@@ -56,6 +74,7 @@
         "interval2": 14400
       },
            "ocpp16/websocket/u+(HV)": {
+        "vendor": "EVAR",
         "crgr_sno": "FFFFFFFFFFFF",
         "crgr_rsno": "FFFFFFFFFFFF",
         "crgr_cid": "114400999011A",
@@ -69,6 +88,7 @@
         "interval2": 14400
       },
                  "ocpp16/websocket/u+(multi)": {
+        "vendor": "EVAR",
         "crgr_sno": "ELC100C-003-001",
         "crgr_rsno": "ELC100C-003-001",
         "crgr_cid": "115001513153C",
@@ -82,6 +102,7 @@
         "interval2": 14400
       },
       "ocpp20/websocket/standard": {
+        "vendor": "EVAR",
         "crgr_sno": "EVSCA050001",
         "crgr_rsno": "EVSCA050002",
         "crgr_cid": "115001514011A",
@@ -95,6 +116,7 @@
         "interval2": 14400
       },
                  "ocpp16/websocket/u+(GENIS)": {
+        "vendor": "GENIS",
         "crgr_sno": "313154200",
         "crgr_rsno": "313154200",
         "crgr_cid": "115001536011A",

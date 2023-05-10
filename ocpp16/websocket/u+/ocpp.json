@@ -5,7 +5,7 @@
     "BootNotification",
     {
       "chargePointModel": "$crgr_mdl",
-      "chargePointVendor": "EVAR",
+      "chargePointVendor": "$vendor",
       "chargePointSerialNumber": "$crgr_sno",
       "firmwareVersion": "0.0.13",
       "iccid": "1213123123",
@@ -22,7 +22,7 @@
       "status": "Available",
       "info": "NoError",
       "timestamp": "$ctime",
-      "vendorId": "EVAR",
+      "vendorId": "$vendor",
       "vendorErrorCode": "NoError"
     }
   ],
@@ -48,8 +48,7 @@
       "connectorId": 1,
       "idTag": "$idTag1",
       "meterStart": "$meter",
-      "timestamp": "$ctime",
-      "reservationId": "$reservationId"
+      "timestamp": "$ctime"
     }
   ],
   "MeterValues": [
@@ -418,7 +417,7 @@
     "321312312",
     "DataTransfer",
     {
-      "vendorId": "EVAR",
+      "vendorId": "$vendor",
       "messageId": "",
       "data": {}
     }

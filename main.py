@@ -36,7 +36,7 @@ class ChargerSim(tk.Tk):
                       '$ctime': datetime.now().isoformat(sep='T', timespec='seconds')+'Z', '$ctime+$interval1': self.interval1,
                       '$ctime+$interval2': self.interval2, '$crgr_mdl':self.en_mdl.get(), '$crgr_sno':self.en_sno.get(),
                       '$crgr_rsno':self.en_rsno.get(), '$uuid':str(uuid.uuid4()), '$transactionId':self.en_tr.get(), '$reservationId':self.en_reserve.get(),
-                      '$connector':self.en_connector.get(), '$meter':self.en_meter.get()}
+                      '$connector':self.en_connector.get(), '$meter':self.en_meter.get(), '$vendor':self.en_vendor.get()}
 
         self.config = Config(wss_url=self.en_url.get(),
                         rest_url=self.en_rest_url.get(),
@@ -64,7 +64,8 @@ class ChargerSim(tk.Tk):
                         lb_mode_alert=self.lb_mode_alert,
                         testschem=self.testschem,
                         ciphersuite=self.lst_ciphersuite,
-                        en_meter = self.en_meter
+                        en_meter = self.en_meter,
+                        en_vendor = self.en_vendor
                         )
 
     def tcload_callback(self):
@@ -94,12 +95,10 @@ class ChargerSim(tk.Tk):
             key = list(doc.keys())[0]
             with open(f"./{self.testschem.get()}/schemas/" + key + ".json") as fd:
                 schema = fd.read().encode('utf-8')
-
             if str(key).endswith("Response") :
                 target =doc[key][2]
             else:
                 target =doc[key][3]
-
             jsonschema.validate(instance=target, schema=json.loads(schema))
             self.org_ocppdocs[key] = doc[key]
             #bt_savetc.config(state='normal')
@@ -160,28 +159,35 @@ class ChargerSim(tk.Tk):
         #     return
         #
         # self.status=0
-        self.bt_conn['state'] = tk.NORMAL
+        if self.bt_standalone['state'] == tk.NORMAL :
+            self.bt_conn['state'] = tk.NORMAL
 
-        self.config_update()
-        # TC_update()
-        self.en_log.delete(0, END)
-        self.en_status.delete(0, END)
-        self.en_status.insert(0, "Running")
+            self.config_update()
+            # TC_update()
+            self.en_log.delete(0, END)
+            self.en_status.delete(0, END)
+            self.en_status.insert(0, "Running")
 
-        if not self.TC_selected  :
-            for tc in self.TC_original.keys():
-                for t in self.TC_original[tc]:
-                    self.lst_tc.insert(END, t)
+            if not self.TC_selected  :
+                for tc in self.TC_original.keys():
+                    for t in self.TC_original[tc]:
+                        self.lst_tc.insert(END, t)
 
-        self.charger = Charger(self.config)
-        await self.charger.standalone(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
-        self.en_status.delete(0, END)
-        self.en_status.insert(0, "Test Finished")
-        self.bt_conn['state'] = tk.DISABLED
-        #tkinter.messagebox.showinfo(title="완료", message="TC 수행을 완료했습니다.")
-        self.txt_tc.delete("0.0", END)
-        self.curProgress.set(0)
-        self.progressbar.update()
+            self.charger = Charger(self.config)
+            await self.charger.standalone(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+            # self.en_status.delete(0, END)
+            # self.en_status.insert(0, "Test Finished")
+            # self.bt_conn['state'] = tk.DISABLED
+            #tkinter.messagebox.showinfo(title="완료", message="TC 수행을 완료했습니다.")
+            self.txt_tc.delete("0.0", END)
+            # self.curProgress.set(0)
+            # self.progressbar.update()
+            self.bt_start['state'] = tk.DISABLED
+            self.bt_standalone.config(bg='blue')
+        else:
+            self.charger.close()
+            self.bt_start['state'] = tk.NORMAL
+            self.bt_standalone.config(bg='yellow')
 
     def directClientSend(self):
         # if self.status == 0:
@@ -532,6 +538,8 @@ class ChargerSim(tk.Tk):
         self.lb_meter = Label(self.frameHat, text="meter", width=5)
         self.en_meter = Entry(self.frameHat)
         self.en_meter.insert(0, "0")
+        self.lb_vendor = Label(self.frameHat, text="vendor", width=5)
+        self.en_vendor = Entry(self.frameHat)
         self.lb_status = Label(self.frameHat, text="Status", width=5)
         self.en_status = Entry(self.frameHat)
         self.lb_url_comp = Label(self.frameTop, text=self.en_url.get()+"/"+self.en_mdl.get()+"/"+self.en_sno.get())
@@ -586,7 +594,7 @@ class ChargerSim(tk.Tk):
         self.bt_start = Button(self.bt_frame, text="TC 실행", command=async_handler(self.startEvent), width=15)
         self.bt_reload = Button(self.bt_frame, text="TC Reload", width=15)
         self.bt_close = Button(self.bt_frame, text="시뮬레이터 종료", command=async_handler(self.closeEvent), width=15)
-        self.bt_standalone = Button(self.bt_frame, text="충전기모드수행", command=async_handler(self.standalone), width=15)
+        self.bt_standalone = Button(self.bt_frame, text="충전기모드수행", command=async_handler(self.standalone), width=15, background="yellow")
         self.bt_savetc = Button(self.bt_rframe, text="변경TC 저장", width=15, command=self.saveocpp)
         self.bt_direct_send = Button(self.bt_rframe, text="전문직접전송(To 충전기)", width=20, bg="lightgreen", command=self.directClientSend, state="disabled")
         self.lb_save_notice = Label(self.bt_rframe)
@@ -606,7 +614,8 @@ class ChargerSim(tk.Tk):
             "idTag3": self.en_idtag3,
             "connector": self.en_connector,
             "interval1": self.en_timestamp2,
-            "interval2": self.en_timestamp3
+            "interval2": self.en_timestamp3,
+            "vendor": self.en_vendor
         }
         self.urls = {
             "rest": self.en_rest_url,
@@ -670,6 +679,8 @@ class ChargerSim(tk.Tk):
         self.en_connector.grid(row=2, column=1, sticky="we")
         self.lb_meter.grid(row=2, column=2, sticky="we")
         self.en_meter.grid(row=2, column=3, sticky="we")
+        self.lb_vendor.grid(row=2, column=4, sticky="we")
+        self.en_vendor.grid(row=2, column=5, sticky="we")
         self.vtc_mode1.configure(command=self.show_txt_tc)
         self.vtc_mode2.configure(command=self.show_txt_tc_rendered)
         self.lb_url.grid(row=3, column=0, sticky="we")

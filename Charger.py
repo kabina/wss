@@ -235,25 +235,25 @@ class Charger() :
 
     async def sendReply(self, ocpp):
         """
-        응답전문 발송
+        응답전문 발송 처리
         :param ocpp: 응답전문 본체
         :return: None
         """
-        ocpp = self.req_message_history[ocpp[1]]
-        if "transactionId" in ocpp[2] and self.transactionId > 0:
-            ocpp[2]["transactionId"] = self.transactionId
-        elif "reservationId" in ocpp[2] :
-            ocpp[2]["reservationId"]=self.en_reserve
+        # ocpp = self.req_message_history[ocpp[1]]
+        # if "transactionId" in ocpp[2] and self.transactionId > 0:
+        #     ocpp[2]["transactionId"] = self.transactionId
+        # elif "reservationId" in ocpp[2] :
+        #     ocpp[2]["reservationId"]=self.en_reserve
 
         await self.ws.send(json.dumps(ocpp))
 
         self.log(f" >> Reply {ocpp}", attr='blue')
-        noused = await self.ws.recv()
-        if noused :
-            await self.post_proc(noused)
-            self.log(f" << Check Response for Reply |{noused}|")
-        else :
-            self.log(f" << Check Response for Reply |{noused}|")
+        # noused = await self.ws.recv()
+        # if noused :
+        #     await self.post_proc(noused)
+        #     self.log(f" << Check Response for Reply |{noused}|")
+        # else :
+        #     self.log(f" << Check Response for Reply |{noused}|")
 
     def convertDocs(self, doc):
         for k in self.confV:
@@ -326,7 +326,7 @@ class Charger() :
             else:
                 self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
                 if(doc[1] != jrecv[1]):
-                    await self.post_proc(recv)
+                    await self.proc_reply(recv)
 
                 #return jrecv
 
@@ -502,43 +502,47 @@ class Charger() :
         for c in scases:
             self.log(f" {c}", attr='green')
 
-    async def post_proc(self, msg):
+    async def proc_reply(self, msg):
         """
-        응답메시지를 만들어서 송신 함
-        :param msg:
+        응답메시지를 만들어서 송신 함, 원격요청 또는 Get, Reset 요청 등
+        사실상 SendReply의 메시지 전체를 생성
+        :param msg: [4, 3213123123132, messageid, {}]의 형태를 가짐
         :return:
         """
         jmsg = json.loads(msg)
         inprog_name = jmsg[2]
-        if len(jmsg)==3 or isinstance(inprog_name,dict) or inprog_name not in self.ocppdocs :
-            print(f'jmsg {jmsg}')
-            print(f'reqmsg {self.req_message_history}')
-            if jmsg[1] in self.req_message_history :
-                self.log(f' << {self.req_message_history[jmsg[1]][2]}:{msg}', attr='blue')
+        # if len(jmsg)==3 or isinstance(inprog_name,dict) or inprog_name not in self.ocppdocs :
+        # 단순 [3, ~~ ] 형태의 응답 메시지 처리
+        if len(jmsg)==3 and jmsg[1] in self.req_message_history :
+            #print(f'jmsg {jmsg}')
+            #print(f'reqmsg {self.req_message_history}')
+            # if jmsg[1] in self.req_message_history :
+            self.log(f' << {self.req_message_history[jmsg[1]][2]}:{msg}', attr='blue')
             return None
-        self.rmessageId = jmsg[1]
-        self.log(f' << {jmsg[2]}:{msg}', attr='blue')
-        senddoc = self.convertSendDoc([f'{inprog_name}Response', {}], uid=jmsg[1], options=RESPONSE)
-        if inprog_name == "RemoteStartTransaction" and self.charger_status != "Charging":
-            senddoc[2]["status"] = "Rejected"
-            self.transactionId = int (jmsg[3]["chargingProfile"]["transactionId"])
-            self.en_tr.delete(0,END)
-            self.en_tr.insert(0, self.transactionId)
+        # [4, ~ ] 로시작하는 메시지들에 대해 [3, ~ ]의 응답 메시지 생성 및 송신
+        else :
+            #self.log(f' << {jmsg[2]}:{msg}', attr='blue')
+            senddoc = self.convertSendDoc([f'{inprog_name}Response', {}], uid=jmsg[1], options=RESPONSE)
+            if inprog_name == "RemoteStartTransaction" and self.charger_status != "Charging":
+                senddoc[2]["status"] = "Rejected"
+                self.transactionId = int (jmsg[3]["chargingProfile"]["transactionId"])
+                self.en_tr.delete(0,END)
+                self.en_tr.insert(0, self.transactionId)
 
-        elif inprog_name == "GetDiagnostics":
-            senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
-        elif inprog_name in ("GetConfiguration", "SetConfiguration"):
-            keys = jmsg[3]["key"]
-            charger_configuration_keys = self.charger_configuration.keys()
-            key_list = []
-            send_conf_keys = {}
-            for k in keys:
-                if k in charger_configuration_keys:
-                    send_conf_keys["key"] = k
-                    send_conf_keys["readonly"] = "false"
-                    key_list.append(send_conf_keys)
-                senddoc[3]["ConfigurationKey"] = key_list
-        recvdoc = await self.sendReply(senddoc)
+            elif inprog_name == "GetDiagnostics":
+                senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
+            elif inprog_name in ("GetConfiguration", "SetConfiguration"):
+                keys = jmsg[3]["key"]
+                charger_configuration_keys = self.charger_configuration.keys()
+                key_list = []
+                send_conf_keys = {}
+                for k in keys:
+                    if k in charger_configuration_keys:
+                        send_conf_keys["key"] = k
+                        send_conf_keys["readonly"] = "false"
+                        key_list.append(send_conf_keys)
+                    senddoc[3]["ConfigurationKey"] = key_list
+            recvdoc = await self.sendReply(senddoc)
 
         return recvdoc
 
@@ -630,7 +634,6 @@ class Charger() :
         start_time = time.time()
 
         while(True) :
-            print(f'송수신 히스토리 수:{len(self.req_message_history)}')
             try:
                 cur_time = time.time()
                 if (cur_time - start_time ) < 1 :
@@ -651,17 +654,17 @@ class Charger() :
                         doc = self.convertSendDoc(["StatusNotification",{"status":"Available"}])
                         recvdoc = await self.sendDocs(doc)
                 else :
-                    """CSMS로부터 Request요청 처리
+                    """CSMS로부터 Request요청 처리, 기본적으로 원격 또는 처리 시나리오 기준으로 동작
                     """
                     try :
                         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
 
                         message = json.loads(recvdoc)
                         message_name = message[2]
-                        if len(message) == 3:
-                            await self.post_proc(recvdoc)
+                        # 메시지가 송신에 대한 응답인 경우
+                        if len(message) == 3 and message[1] in self.req_message_history:
+                            await self.proc_reply(recvdoc)
                         else :
-
                             if message_name == "TriggerMessage":
                                 message_name = message[3]["requestedMessage"]
                                 doc = self.convertSendDoc([message_name, {}])
@@ -678,7 +681,6 @@ class Charger() :
                                     "Accept":"*/*",
                                     "Slug": filename
                                 }
-
                                 response = requests.put(location, files={'file': json.dumps(diaginfo)}, headers=header)
 
                             elif message_name == "UpdateFirmware":
@@ -700,9 +702,11 @@ class Charger() :
                                 else:
                                     print("파일 다운로드 실패:", response.status_code)
                             else:
+                                #기타 [2~ ]의 요청 메시지 처리
                                 print(f'IN WHILE: {recvdoc}')
                                 self.req_message_history[message[1]] = message
-                                await self.post_proc(recvdoc)
+                                await self.proc_reply(recvdoc)
+                                # 원격 요청에 대한 응답 후 원격 요청이 그룹으로 구성된 경우(message_map) 처리
                                 if message_name in message_map:
                                     await self.process_message(recvdoc)
                                 start_time = cur_time

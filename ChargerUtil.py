@@ -1,5 +1,24 @@
 import jsonschema, json
 from datetime import datetime
+from collections import OrderedDict
+
+class RequestMessages(OrderedDict):
+    def __init__(self, max_size):
+        super().__init__()
+        self.max_size = max_size
+
+    def __setitem__(self, key, value):
+        contains_key = 1 if key in self else 0
+        if len(self) - contains_key >= self.max_size:
+            oldest = next(iter(self))
+            del self[oldest]
+        if contains_key:
+            del self[key]
+        super().__setitem__(key, value)
+    def __getitem__(self, key):
+        # move key to end of ordered dict to keep most recently used keys
+        self.move_to_end(key)
+        return super().__getitem__(key)
 
 def checkSchema(original, target, schema):
     """
@@ -123,7 +142,7 @@ message_map = {
                 "RemoteStartTransaction":[
                     ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
                     ["DataTransfer", {"messageId":"chargeValue", "connectorId":1, "idTag":"$idTag", "timestamp":"$ctime"}],
-                    ["StartTransaction",{}],
+                    ["StartTransaction",{"reservationId":"$transactionId"}],
                     ["StatusNotification",{"status":"Charging"}],
                     ["MeterValues", {}],
                     ["MeterValues", {}],
@@ -151,5 +170,10 @@ message_map = {
                     ["StopTransaction",{}],
                     ["StatusNotification", {"status":"Finishing"}],
                     ["StatusNotification", {"status":"Available"}]
-                ]
+                ],
+                # "StopTransaction": [
+                #     ["StopTransaction", {}],
+                #     ["StatusNotification", {"status": "Finishing"}],
+                #     ["StatusNotification", {"status": "Available"}]
+                # ]
                 }

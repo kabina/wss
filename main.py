@@ -226,6 +226,7 @@ class ChargerSim(tk.Tk):
         self.bt_conn['state'] = tk.DISABLED
 
     async def closeEvent(self):
+        self.charger.save_req_message_history()
         self.window.destroy()
 
     async def stopCharger(self):
@@ -776,6 +777,7 @@ class ChargerSim(tk.Tk):
 
         self.load_default_tc()
         self.config_update()
+
 
         async_mainloop(self.window)
 

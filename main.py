@@ -21,9 +21,15 @@ class ChargerSim(tk.Tk):
         self.ConfV = {}
         self.config = None
         self.charger = None
+        self.chargerlist = {}
+        self.conf = json.loads(open("./config.json", encoding="utf-8").read())
         self.status = None
         self.initUI()
         self.startApp()
+        self.cur_charger
+
+
+
 
     def config_update(self):
         self.interval1 = ((datetime.now() + timedelta(
@@ -36,7 +42,7 @@ class ChargerSim(tk.Tk):
                       '$ctime': datetime.now().isoformat(sep='T', timespec='seconds')+'Z', '$ctime+$interval1': self.interval1,
                       '$ctime+$interval2': self.interval2, '$crgr_mdl':self.en_mdl.get(), '$crgr_sno':self.en_sno.get(),
                       '$crgr_rsno':self.en_rsno.get(), '$uuid':str(uuid.uuid4()), '$transactionId':self.en_tr.get(), '$reservationId':self.en_reserve.get(),
-                      '$connector':self.en_connector.get(), '$meter':self.en_meter.get(), '$vendor':self.en_vendor.get()}
+                      '$connector':self.en_connector.get(), '$meter':self.en_meter.get(), '$vendor':self.en_vendor.get(), '$soc':self.en_soc.get()}
 
         self.config = Config(wss_url=self.en_url.get(),
                         rest_url=self.en_rest_url.get(),
@@ -65,7 +71,12 @@ class ChargerSim(tk.Tk):
                         testschem=self.testschem,
                         ciphersuite=self.lst_ciphersuite,
                         en_meter = self.en_meter,
-                        en_vendor = self.en_vendor
+                        en_vendor = self.en_vendor,
+                        en_soc = self.en_soc,
+                        charger_name = None,
+                        charger_status = None,
+                        charger_meter = None,
+                        charger_soc = None
                         )
 
     def tcload_callback(self):
@@ -152,15 +163,27 @@ class ChargerSim(tk.Tk):
         self.curProgress.set(0)
         self.progressbar.update()
 
-    async def standalone(self):
+    async def standalone(self, idx):
         # if self.status == 0:
         #     messagebox.showwarning(title="소켓연결", message="소켓 연결 후 시작 하십시오")
         #     #     messagebox.showwarning("소켓 연결 후 TC실행 해 주세요", "경고")
         #     return
         #
         # self.status=0
+        charger = None
+        print(self.chargerlist)
+        self.logtabs.select(idx)
+        if idx in self.chargerlist :
+            if messagebox.askyesno(title="충전기동작중", message="연결을 끊고 재시작(Boot)하시겠습니까?"):
+                await self.chargerlist[idx].charger_init()
+            else:
+                return
+        print("AFTER RESTART")
         if self.bt_standalone['state'] == tk.NORMAL :
             self.bt_conn['state'] = tk.NORMAL
+            charger_confs = self.conf["properties"]["protocol"]
+            chargerlist = list(charger_confs.keys())
+            self.testschem.set(chargerlist[idx])
 
             self.config_update()
             # TC_update()
@@ -173,21 +196,68 @@ class ChargerSim(tk.Tk):
                     for t in self.TC_original[tc]:
                         self.lst_tc.insert(END, t)
 
-            self.charger = Charger(self.config)
-            await self.charger.standalone(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+            charger_conf_details = None
+            for charger in charger_confs.keys():
+                if self.chargers[idx]['text'] in charger :
+                    charger_conf_details = charger_confs[charger]
+            print(charger_conf_details)
+            print(idx, self.chargers[idx]['text'])
+            config = Config(
+                wss_url=self.en_url.get(),
+                rest_url=self.en_rest_url.get(),
+                auth_token = charger_conf_details["auth_token"],
+                en_tr = self.en_tr,
+                en_tc = self.en_tc,
+                lst_cases =self.lst_cases,
+                en_status = self.en_status,
+                txt_recv = self.chargerlogs[idx],
+                cid = charger_conf_details["crgr_cid"],
+                rcid = charger_conf_details["crgr_rcid"],
+                sno = charger_conf_details["crgr_sno"],
+                rsno = charger_conf_details["crgr_rsno"],
+                mdl = charger_conf_details["crgr_mdl"],
+                result = self.TC_result,
+                confV = self.ConfV,
+                en_reserve = self.en_reserve.get(),
+                lst_tc = self.lst_tc,
+                test_mode = self.vmode.get(),
+                ocppdocs = self.ocppdocs,
+                txt_tc = self.txt_tc,
+                progressbar = self.progressbar,
+                curProgress = self.curProgress,
+                bt_direct_send = self.bt_direct_send,
+                lb_mode_alert = self.lb_mode_alert,
+                testschem = self.testschem,
+                ciphersuite = self.lst_ciphersuite,
+                en_meter = self.en_meter,
+                en_soc = self.en_soc,
+                en_vendor = self.en_vendor,
+                charger_name = self.chargers[idx]['text'],
+                charger_status = self.chargerstatuses[idx],
+                charger_meter = self.charger_meter[idx],
+                charger_soc = self.charger_soc[idx]
+            )
+            print("BEFORE NEW CHARGER")
+            charger = Charger(config)
+            print("AFTER NEW CHARGER")
+            self.cur_charger = idx
+            self.chargerlist[idx] = charger
+
+            await charger.standalone(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
+
             # self.en_status.delete(0, END)
             # self.en_status.insert(0, "Test Finished")
             # self.bt_conn['state'] = tk.DISABLED
             #tkinter.messagebox.showinfo(title="완료", message="TC 수행을 완료했습니다.")
-            self.txt_tc.delete("0.0", END)
-            # self.curProgress.set(0)
-            # self.progressbar.update()
-            self.bt_start['state'] = tk.DISABLED
-            self.bt_standalone.config(bg='blue')
+            # self.txt_tc.delete("0.0", END)
+            # # self.curProgress.set(0)
+            # # self.progressbar.update()
+            # self.bt_start['state'] = tk.DISABLED
+            # self.bt_standalone.config(bg='blue')
         else:
-            self.charger.close()
-            self.bt_start['state'] = tk.NORMAL
-            self.bt_standalone.config(bg='yellow')
+            charger.close()
+            # self.bt_start['state'] = tk.NORMAL
+            # self.bt_standalone.config(bg='yellow')
 
     def directClientSend(self):
         # if self.status == 0:
@@ -226,7 +296,8 @@ class ChargerSim(tk.Tk):
         self.bt_conn['state'] = tk.DISABLED
 
     async def closeEvent(self):
-        self.charger.save_req_message_history()
+        for item in self.chargerlist.items():
+            item[1].save_req_message_history()
         self.window.destroy()
 
     async def stopCharger(self):
@@ -429,21 +500,26 @@ class ChargerSim(tk.Tk):
     def init_result(self):
         self.TC_result = ['Not Tested' for _ in range(len(self.TC.keys()))]
 
+    def charger_status_switch(self, idx):
+        self.standalone(idx)
+        self.logtabs.select(idx)  # 버튼 순서에 해당하는 하위 탭으로 포커스 이동
 
     def initUI(self):
         import tkinter.ttk
         from tkinter import Label, Entry, Button, scrolledtext, Listbox
 
         self.window = tkinter.Tk()
-        self.tabs = ttk.Notebook(self.window)
+        self.tabs = ttk.Notebook(self.window, width=15)
         s = ttk.Style()
         s.theme_use('default')
         s.configure('Tab', width=10)
         self.tabs.pack(fill=BOTH, expand=TRUE)
         self.tab1 = tkinter.ttk.Frame(self.tabs)
         self.tab2 = tkinter.ttk.Frame(self.tabs)
+        self.tab3 = tkinter.ttk.Frame(self.tabs)
         self.tabs.add(self.tab1, text="TC Run")
         self.tabs.add(self.tab2, text="TC Configure")
+        self.tabs.add(self.tab3, text="Charger Simulation")
 
         self.status = 1
         self.vtxt_tc_changed = IntVar()
@@ -455,6 +531,15 @@ class ChargerSim(tk.Tk):
         self.frameBot = LabelFrame(self.tab1, text="Log Output", padx=5, pady=5)
         self.frameConfTop = LabelFrame(self.tab2, text="Basic Configuration", padx=5, pady=5)
         self.frameConfBot = LabelFrame(self.tab2, text="Custom Configuration", padx=5, pady=5)
+
+
+        #self.subtabs = ttk.Notebook(self.tab3)
+        self.frameBtChargers = LabelFrame(self.tab3, text="Chargers", padx=5, pady=5)
+        self.frameChargerLogs = Frame(self.tab3, padx=5, pady=5)
+        self.frameBtChargers.pack(side="top", fill="both", expand=True, padx=5, pady=5)
+        self.frameChargerLogs.pack(side="bottom", fill="both", expand=True, padx=5, pady=5)
+
+
 
         self.lst_cases = Listbox(self.frameTop, height=7, selectmode="extended", activestyle="none", exportselection=False)
         self.rdo_frame = Frame(self.frameTop)
@@ -519,6 +604,77 @@ class ChargerSim(tk.Tk):
             messagebox.showerror(title="구성파일", message="구성파일(config.json) 오류, 파일 존재 및 내용을 확인 하세요")
             self.window.destroy()
 
+        self.chargers = []
+        self.chargerlogtabs = []
+        self.chargerloglabelframe = []
+        self.chargerlogs = []
+        self.chargerstatuses = []
+        self.charger_meter = []
+        self.charger_soc = []
+        protocols = self.conf["properties"]["protocol"]
+        protocol_keys = list(self.conf["properties"]["protocol"].keys())
+        for idx, c in enumerate(protocol_keys):
+            btname = c.split('/')[-1]
+            btCharger = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.standalone, idx))
+            btCharger.grid(row=0, column=idx, sticky="we")
+            self.chargers.append(btCharger)
+
+        style = ttk.Style()
+        style.configure("NLabel.TLable", foreground="black", background="white", font=("TkDefaultFont", 12), padding=10)
+        style.configure("BLabel.TLabel", foreground="blue")
+        style.configure("GLabel.TLabel", foreground="green")
+
+        for idx, c in enumerate(protocol_keys):
+            chrstn_nm = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["chrstn_nm"]}', width=12, anchor="center", style='NLabel.TLabel')
+            chrstn_nm.grid(row=1, column=idx, sticky="we")
+            #self.chargerstatuses.append(cid)
+
+        for idx, c in enumerate(protocol_keys):
+            mdl = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_mdl"]}', width=12, anchor="center", style='NLabel.TLabel')
+            mdl.grid(row=2, column=idx, sticky="we")
+            #self.chargerstatuses.append(mdl)
+
+        for idx, c in enumerate(protocol_keys):
+            mdl = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_sno"]}', width=12, anchor="center", style='NLabel.TLabel')
+            mdl.grid(row=3, column=idx, sticky="we")
+            #self.chargerstatuses.append(mdl)
+
+        for idx, c in enumerate(protocol_keys):
+            cid = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_cid"]}', width=12, anchor="center", style='NLabel.TLabel')
+            cid.grid(row=4, column=idx, sticky="we")
+
+
+        for idx, c in enumerate(protocol_keys):
+            stCharger = ttk.Label(self.frameBtChargers, text='대기중', width=12, anchor="center", style='BLabel.TLabel')
+            stCharger.grid(row=5, column=idx, sticky="we")
+            self.chargerstatuses.append(stCharger)
+
+        for idx, c in enumerate(protocol_keys):
+            wh = ttk.Label(self.frameBtChargers, text=f"{0} Wh", width=12, anchor="center", style='GLabel.TLabel')
+            wh.grid(row=6, column=idx, sticky="we")
+            self.charger_meter.append(wh)
+
+        for idx, c in enumerate(protocol_keys):
+            soc = ttk.Label(self.frameBtChargers, text=f"{0} %", width=12, anchor="center", style='GLabel.TLabel')
+            soc.grid(row=7, column=idx, sticky="we")
+            self.charger_soc.append(soc)
+
+        self.logtabs = ttk.Notebook(self.frameChargerLogs)
+        self.logtabs.pack(fill=BOTH, expand=TRUE)
+        style.configure("TNotebook.Tab", width=10)
+        for idx, c in enumerate(self.options):
+            btname = c.split('/')[-1]
+            logtab = tkinter.ttk.Frame(self.logtabs, style='TNotebook.Tab')
+
+            self.chargerlogtabs.append(logtab)
+            loglabelframe = LabelFrame(logtab, text=btname, padx=5, pady=5)
+            loglabelframe.grid(row=0, column=0, sticky="nsew")
+            self.chargerloglabelframe.append(loglabelframe)
+            self.logtabs.add(logtab, text=btname)
+            chargerlogtxt = scrolledtext.ScrolledText(loglabelframe, width=157, height=40)
+            chargerlogtxt.grid(row=0, column=0, sticky="nsew")
+            self.chargerlogs.append(chargerlogtxt)
+
         self.en_protocol = OptionMenu(self.frameHat, self.testschem, *self.options)
         self.en_protocol.configure(width=20)
         self.testschem.trace("w", self.testschemChanged)
@@ -539,6 +695,10 @@ class ChargerSim(tk.Tk):
         self.lb_meter = Label(self.frameHat, text="meter", width=5)
         self.en_meter = Entry(self.frameHat)
         self.en_meter.insert(0, "0")
+        self.lb_chrstn_nm = Label(self.frameHat, text="meter", width=5)
+        self.en_chrstn_nm = Entry(self.frameHat)
+        self.lb_soc = Label(self.frameHat, text="SoC", width=5)
+        self.en_soc = Entry(self.frameHat)
         self.lb_vendor = Label(self.frameHat, text="vendor", width=5)
         self.en_vendor = Entry(self.frameHat)
         self.lb_status = Label(self.frameHat, text="Status", width=5)
@@ -595,13 +755,11 @@ class ChargerSim(tk.Tk):
         self.bt_start = Button(self.bt_frame, text="TC 실행", command=async_handler(self.startEvent), width=15)
         self.bt_reload = Button(self.bt_frame, text="TC Reload", width=15)
         self.bt_close = Button(self.bt_frame, text="시뮬레이터 종료", command=async_handler(self.closeEvent), width=15)
-        self.bt_standalone = Button(self.bt_frame, text="충전기모드수행", command=async_handler(self.standalone), width=15, background="yellow")
+        self.bt_standalone = Button(self.bt_frame, text="충전기모드수행", command=async_handler(self.standalone, 1), width=15, background="yellow")
         self.bt_savetc = Button(self.bt_rframe, text="변경TC 저장", width=15, command=self.saveocpp)
         self.bt_direct_send = Button(self.bt_rframe, text="전문직접전송(To 충전기)", width=20, bg="lightgreen", command=self.directClientSend, state="disabled")
         self.lb_save_notice = Label(self.bt_rframe)
         self.bt_savetc.config(state='disabled')
-
-
 
         self.properties = {
             "crgr_sno": self.en_sno,
@@ -616,13 +774,13 @@ class ChargerSim(tk.Tk):
             "connector": self.en_connector,
             "interval1": self.en_timestamp2,
             "interval2": self.en_timestamp3,
-            "vendor": self.en_vendor
+            "vendor": self.en_vendor,
+            "chrstn_nm":self.en_chrstn_nm
         }
         self.urls = {
             "rest": self.en_rest_url,
             "wss": self.en_url
         }
-
     def startApp(self):
 
         self.menu1.add_command(label="Load TC (Json)", command=self.tcload_callback)
@@ -682,6 +840,10 @@ class ChargerSim(tk.Tk):
         self.en_meter.grid(row=2, column=3, sticky="we")
         self.lb_vendor.grid(row=2, column=4, sticky="we")
         self.en_vendor.grid(row=2, column=5, sticky="we")
+        self.lb_chrstn_nm.grid(row=2, column=6, sticky="we")
+        self.en_chrstn_nm.grid(row=2, column=7, sticky="we")
+        self.lb_soc.grid(row=2, column=8, sticky="we")
+        self.en_soc.grid(row=2, column=9, sticky="we")
         self.vtc_mode1.configure(command=self.show_txt_tc)
         self.vtc_mode2.configure(command=self.show_txt_tc_rendered)
         self.lb_url.grid(row=3, column=0, sticky="we")

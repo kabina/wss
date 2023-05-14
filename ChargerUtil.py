@@ -112,6 +112,11 @@ class Config():
         self.ciphersuite = kwargs['ciphersuite']
         self.en_meter = kwargs['en_meter']
         self.en_vendor = kwargs['en_vendor']
+        self.en_soc = kwargs['en_soc']
+        self.charger_name = kwargs['charger_name']
+        self.charger_status = kwargs['charger_status']
+        self.charger_meter = kwargs['charger_meter']
+        self.charger_soc = kwargs['charger_soc']
 
 diag_info = {
        "chargeBoxSerialNumber": "ABCD1234",

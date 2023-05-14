@@ -19,6 +19,7 @@
         ["BootNotification", {}],
         ["StatusNotification", {"status": "Available"} ],
         ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
+        ["DataTransfer", {"messageId":"Tariff", "connectorId": 1, "idTag": "$idTag", "timestamp": "$ctime"}],
         ["StartTransaction", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
         ["StatusNotification", {"status": "Charging"}],
         ["MeterValues", {"transactionId":"$transactionId"}],

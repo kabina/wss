@@ -5,7 +5,7 @@
     "BootNotification",
     {
       "chargePointModel": "$crgr_mdl",
-      "chargePointVendor": "GENIS",
+      "chargePointVendor": "$vendor",
       "chargePointSerialNumber": "$crgr_sno",
       "firmwareVersion": "0.0.13",
       "iccid": "1213123123",
@@ -19,7 +19,11 @@
     {
       "connectorId": "$connector",
       "errorCode": "NoError",
-      "status": "Available"
+      "status": "Available",
+      "info": "NoError",
+      "timestamp": "$ctime",
+      "vendorId": "$vendor",
+      "vendorErrorCode": "NoError"
     }
   ],
   "Heartbeat": [
@@ -75,7 +79,8 @@
     {
       "meterStop": "$meter",
       "timestamp": "$ctime",
-      "transactionId": "$transactionId"
+      "transactionId": "$transactionId",
+      "reason": "Finished"
     }
   ],
   "ClearCache": [
@@ -130,7 +135,9 @@
     "321312312",
     "RemoteStopTransaction",
     {
-      "transactionId": 12321
+      "transactionId": "$transactionId",
+      "idTag": "$idTag",
+      "chargingProfile": ""
     }
   ],
   "RemoteStopTransactionResponse": [
@@ -410,9 +417,9 @@
     "321312312",
     "DataTransfer",
     {
-      "vendorId": "ChungAng",
-      "messageId": "TEST",
-      "data": "Test Data"
+      "vendorId": "$vendor",
+      "messageId": "",
+      "data": {}
     }
   ],
     "DataTransferResponse": [

@@ -67,6 +67,7 @@ class Charger() :
         self.transactionId = 0
         self.reserved = False
         self.rmessageId = None
+        self.soc = 20
         self.logger = logger
         self.config = config
         self.en_tr = config.en_tr
@@ -92,19 +93,27 @@ class Charger() :
         self.testschem = config.testschem
         self.ciphersuite = config.ciphersuite
         self.en_meter = config.en_meter
+        self.en_soc = config.en_soc
         self.interval = 300
+        self.meter = 0
         self.en_vendor = config.en_vendor
+        self.charger_meter = config.charger_meter
+        self.charger_soc = config.charger_soc
+        print("BEFORE REQ_MESSAGE")
         self.req_message_history = self.load_req_message_history()
+
 
         self.arr_messageid = {
             "$uuid":str(uuid.uuid4()),
             "$timestamp":datetime.now().isoformat(sep="T", timespec="seconds")+'Z'
         }
-        self.charger_configuration = json.loads(open("config.json","r", encoding='cp949').read())
-
+        print("AFTER REQ_MESSAGE")
+        self.charger_configuration = json.loads(open("config.json","r", encoding='utf-8').read())
+        print("END OF INIT")
         self.message_func_map = {
             "TriggerMessage": self.TriggerMessage
         }
+
 
     def log(self, log, attr=None):
         from datetime import datetime
@@ -145,6 +154,11 @@ class Charger() :
         self.interval = 600
         self.en_meter = config.en_meter
         self.en_vendor = config.en_vendor
+        self.en_soc = config.en_soc
+        self.charger_name = self.chargers[idx]['text'],
+        self.charger_status = self.chargerstatuses[idx]
+        self.charger_meter = self.charger_meter[idx]
+        self.charger_soc = self.charger_soc[idx]
 
     def change_list(self, case, text, attr=None, log=None):
         try:
@@ -216,7 +230,7 @@ class Charger() :
 
             # print("Cipher suite used in WebSocket connection:", sslopt_ciphers)
         except Exception as err:
-            self.log(err)
+            self.log(str(err))
             self.log(" 연결에 실패했습니다", attr="red")
 
         await asyncio.sleep(1)
@@ -244,7 +258,7 @@ class Charger() :
 
     def save_req_message_history(self):
         import pickle
-        with open(f'req_message_history_{datetime.now().isoformat(sep="T",timespec="seconds")}', 'wb') as fd:
+        with open(f'req_message_history_{datetime.now().strftime("%Y-%m-%d")}', 'wb') as fd:
             pickle.dump(self.req_message_history, fd)
 
     def load_req_message_history(self):
@@ -259,7 +273,7 @@ class Charger() :
                 if latest_file is None or os.path.getmtime(file) > os.path.getmtime(latest_file):
                     latest_file = file
             if lastest_file is not None :
-                with open('my_ordered_dict.pickle', 'rb') as f:
+                with open(latest_file, 'rb') as f:
                     loaded_ordered_dict = pickle.load(f)
                     return loaded_ordered_dict
             else:
@@ -288,9 +302,16 @@ class Charger() :
         :param ocpp:
         :return:
         """
-        self.confV["$meter"] = self.en_meter.get()
-        self.confV["$transactionId"] = self.en_tr.get()
+        self.confV["$meter"] = self.meter
+        self.confV["$transactionId"] = self.transactionId
         doc = json.loads(self.ocppdocs)[ocpp[0]]
+        print(doc)
+        print(self.cid)
+        """ 고속 충전인 경우 Soc값 추가"""
+        if self.cid.endswith("C") and doc[2] == "MeterValues":
+            socstr = '{ "value": "'+str(self.soc)+'", "measurand": "SoC", "unit": "%" }'
+            doc[3]["meterValue"][0]["sampledValue"].append(json.loads(socstr))
+        print(doc)
         """전문 템플릿 변환"""
 
         doc[options] = self.convertDocs(doc[options])
@@ -310,7 +331,20 @@ class Charger() :
             del ddoc["messageId"]
             doc[3]["data"] = ddoc
 
+
+
         return doc
+    def change_status(self, status):
+        self.charger_status = status
+        self.config.charger_status.config(text = status)
+
+    def change_meter(self, meter):
+        self.meter = meter
+        self.charger_meter.config(text = f'{self.meter} Wh')
+
+    def change_soc(self, soc):
+        self.soc = soc
+        self.charger_soc.config(text = f'{self.soc} %')
 
     async def sendDocs(self, doc):
 
@@ -319,9 +353,11 @@ class Charger() :
         print(doc)
         self.log(f' >> {doc[2]}:{doc}', attr='blue')
         if doc[2] == "BootNotification":
-            self.charger_status = "Boot"
+            #self.charger_status = "Boot"
+            self.change_status("PowerUp")
         elif doc[2] == "StatusNotification":
-            self.charger_status = doc[3]["status"]
+            #self.charger_status = doc[3]["status"]
+            self.change_status(doc[3]["status"])
         return doc
 
 
@@ -726,9 +762,11 @@ class Charger() :
             print(f'cout : {idx} total size : {len(message_map[message_name])}')
             if c[0] == "MeterValues" :
                 if self.transactionId > 0 and self.charger_status == "Charging":
-                    v = int(self.en_meter.get()) + 999
-                    self.en_meter.delete(0, END)
-                    self.en_meter.insert(0, v)
+                    v = self.meter + 999
+                    self.change_meter(v)
+                    if self.cid.endswith("C") :
+                        s = self.soc + 5
+                        self.change_soc(s)
                     doc[3]["meterValue"][0]["sampledValue"][0]["value"] = str(v)
                     await asyncio.sleep(5)
                 else:
@@ -741,8 +779,10 @@ class Charger() :
                 if self.transactionId > 0 :
                     doc[3]["reservationId"] = self.transactionId
             elif c[0] == "StatusNotification":
-                self.charger_status = doc[3]["status"]
+                self.change_status(doc[3]["status"])
+                #self.charger_status = doc[3]["status"]
 
+            time.sleep(2)
             print(f'doc:{doc}')
             await self.sendDocs(doc)
 
@@ -762,8 +802,13 @@ class Charger() :
             return True
 
     async def charger_init(self):
+        try :
+            print("In init")
+            await self.ws.close()
+        except Exception as e:
+            pass
+        print("In init")
         await self.conn("TC_02_ColdBoot", type="standalone")
-
         doc = self.convertSendDoc(["BootNotification", {}])
         await self.sendDocs(doc)
         await asyncio.sleep(0.5)
@@ -783,7 +828,7 @@ class Charger() :
         :return: None
         """
         self.status = 0
-
+        print("IN STANDALONE")
         cur_idx = self.lst_cases.curselection()
         cur_idx = cur_idx[0] if cur_idx else 0
         self.lst_cases.selection_clear(cur_idx+1,END)
@@ -807,6 +852,7 @@ class Charger() :
 
                 await asyncio.sleep(1)
             except websockets.exceptions.ConnectionClosedOK:
+                print("Exception in Init")
                 await self.charger_init()
             except asyncio.TimeoutError as te:
                 print("TimeoutError in standalone")

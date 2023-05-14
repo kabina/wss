@@ -20,6 +20,7 @@
 		"reason": {
 			"type": "string",
 			"enum": [
+				"Finished",
 				"EmergencyStop",
 				"EVDisconnected",
 				"HardReset",

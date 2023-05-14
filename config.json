@@ -2,13 +2,13 @@
   "testschem": [
         "ocpp16/websocket/standard",
         "ocpp16/websocket/u+",
-        "ocpp16/websocket/u+(RESERVED)",
-        "ocpp16/websocket/u+(evar)",
-        "ocpp16/websocket/u+(HV)",
-        "ocpp20/websocket/standard",
-        "ocpp20/websocket/u+",
-        "ocpp16/websocket/u+(multi)",
-        "ocpp16/websocket/u+(GENIS)"
+        "ocpp16/websocket/RESERVED",
+        "ocpp16/websocket/Highspeed",
+        "ocpp16/websocket/evar",
+        "ocpp16/websocket/HV",
+        "ocpp20/websocket/other",
+        "ocpp16/websocket/multi",
+        "ocpp16/websocket/GENIS"
 
   ],
   "urls": {
@@ -18,6 +18,7 @@
   "properties": {
     "protocol": {
       "ocpp16/websocket/standard": {
+        "chrstn_nm": "u+마곡사옥개발2번",
         "vendor":"EVAR",
         "crgr_sno": "EVSCA050001",
         "crgr_rsno": "EVSCA050002",
@@ -32,6 +33,7 @@
         "interval2": 14400
       },
       "ocpp16/websocket/u+": {
+        "chrstn_nm": "u+마곡사옥개발1번",
         "vendor": "EVAR",
         "crgr_sno": "EVSCA070007",
         "crgr_rsno": "EVSCA070007",
@@ -45,7 +47,8 @@
         "interval1": 3600,
         "interval2": 14400
       },
-            "ocpp16/websocket/u+(RESERVED)": {
+      "ocpp16/websocket/RESERVED": {
+        "chrstn_nm": "u+마곡사옥개발1번",
         "vendor": "EVAR",
         "crgr_sno": "EVSCA070008",
         "crgr_rsno": "EVSCA070008",
@@ -59,7 +62,23 @@
         "interval1": 3600,
         "interval2": 14400
       },
-      "ocpp16/websocket/u+(evar)": {
+      "ocpp16/websocket/Highspeed": {
+        "chrstn_nm": "u+마곡사옥개발1번",
+        "vendor": "EVAR",
+        "crgr_sno": "ELC050C-001-001",
+        "crgr_rsno": "ELC050C-001-001",
+        "crgr_cid": "115001513071C",
+        "crgr_rcid": "115001513071C",
+        "crgr_mdl": "ELC050C-001",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+      "ocpp16/websocket/evar": {
+        "chrstn_nm": "u+에바판교사옥1번",
         "vendor": "EVAR",
         "crgr_sno": "EVSCA0101629",
         "crgr_rsno": "EVSCA0101629",
@@ -73,7 +92,8 @@
         "interval1": 3600,
         "interval2": 14400
       },
-           "ocpp16/websocket/u+(HV)": {
+      "ocpp16/websocket/HV": {
+        "chrstn_nm": "(HV이관)LG헬로비전(테스트운영)",
         "vendor": "EVAR",
         "crgr_sno": "FFFFFFFFFFFF",
         "crgr_rsno": "FFFFFFFFFFFF",
@@ -87,7 +107,8 @@
         "interval1": 3600,
         "interval2": 14400
       },
-                 "ocpp16/websocket/u+(multi)": {
+       "ocpp16/websocket/multi": {
+        "chrstn_nm": "u+마곡사옥개발1번",
         "vendor": "EVAR",
         "crgr_sno": "ELC100C-003-001",
         "crgr_rsno": "ELC100C-003-001",
@@ -101,21 +122,8 @@
         "interval1": 3600,
         "interval2": 14400
       },
-      "ocpp20/websocket/standard": {
-        "vendor": "EVAR",
-        "crgr_sno": "EVSCA050001",
-        "crgr_rsno": "EVSCA050002",
-        "crgr_cid": "115001514011A",
-        "crgr_rcid": "115001514021A",
-        "crgr_mdl": "ELA007C05",
-        "auth_token": "Basic RVZBUjpFVkFSTEdV",
-        "idTag1": "1031040000069641",
-        "idTag2": "1031040000069642",
-        "connector": "1",
-        "interval1": 3600,
-        "interval2": 14400
-      },
-                 "ocpp16/websocket/u+(GENIS)": {
+      "ocpp16/websocket/GENIS": {
+        "chrstn_nm": "u+마곡사옥개발3번",
         "vendor": "GENIS",
         "crgr_sno": "313154200",
         "crgr_rsno": "313154200",

@@ -286,7 +286,7 @@ class Charger() :
         :return: None
         """
         await self.ws.send(json.dumps(ocpp))
-        self.log(f' >> {self.req_message_history[ocpp[1]][2]}:{ocpp}', attr='blue')
+        self.log(f' >> {self.req_message_history[ocpp[1]][2]}:{ocpp}', attr='green')
 
     def convertDocs(self, doc):
         for k in self.confV:
@@ -328,6 +328,7 @@ class Charger() :
             ddoc = ocpp[1]
             for k in self.confV:
                 tc_render(ddoc, k, self.confV[k])
+            doc[3]["messageId"]=ocpp[1]["messageId"]
             del ddoc["messageId"]
             doc[3]["data"] = ddoc
 
@@ -351,7 +352,7 @@ class Charger() :
         await self.ws.send(json.dumps(doc))
         self.req_message_history[doc[1]] = doc
         print(doc)
-        self.log(f' >> {doc[2]}:{doc}', attr='blue')
+        self.log(f' >> {doc[2]}:{doc}', attr='green')
         if doc[2] == "BootNotification":
             #self.charger_status = "Boot"
             self.change_status("PowerUp")
@@ -737,7 +738,11 @@ class Charger() :
                     print("파일 다운로드 완료:", filename)
                 else:
                     print("파일 다운로드 실패:", response.status_code)
-            elif message_name in message_map:
+            elif message_name == "RemoteStartTransaction":
+                if message[3]["idTag"] :
+                    self.confV["idTag"] = message[3]["idTag"]
+
+            if message_name and message_name in message_map:
                 return await self.process_message(recvdoc)
 
 

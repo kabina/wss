@@ -146,7 +146,7 @@ message_map = {
                 ],
                 "RemoteStartTransaction":[
                     ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
-                    ["DataTransfer", {"messageId":"chargeValue", "connectorId":1, "idTag":"$idTag", "timestamp":"$ctime"}],
+                    ["DataTransfer", {"messageId":"chargeValue", "idTag":"$idTag", "connectorId":1, "transactionId":"$transactionId", "timestamp":"$ctime"}],
                     ["StartTransaction",{"reservationId":"$transactionId"}],
                     ["StatusNotification",{"status":"Charging"}],
                     ["MeterValues", {}],

@@ -3,6 +3,7 @@ import tkinter
 import json, pyperclip, uuid, logging
 import tkinter as tk
 from Charger import Charger, TextHandler, Config
+import ChargerStandalone
 from async_tkinter_loop import async_handler, async_mainloop
 from tkinter import *
 from tkinter import ttk, messagebox
@@ -238,7 +239,7 @@ class ChargerSim(tk.Tk):
                 charger_soc = self.charger_soc[idx]
             )
             print("BEFORE NEW CHARGER")
-            charger = Charger(config)
+            charger = ChargerStandalone.Charger(config)
             print("AFTER NEW CHARGER")
             self.cur_charger = idx
             self.chargerlist[idx] = charger

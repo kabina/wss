@@ -164,9 +164,6 @@
     "321312312",
     "GetConfiguration",
     {
-      "key": [
-        ""
-      ]
     }
   ],
   "GetLocalListVersion": [

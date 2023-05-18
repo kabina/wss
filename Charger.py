@@ -8,7 +8,6 @@ import uuid
 from colorlog import ColoredFormatter
 import urllib3
 from datetime import datetime
-import urllib3
 import tkinter as tk
 from tkinter import *
 import timeit
@@ -129,7 +128,6 @@ class Charger() :
         self.status = -1
 
     def update_config(self, config):
-        self.config = config
         self.config = config
         self.en_tr = config.en_tr
         self.en_tc = config.en_tc
@@ -324,13 +322,18 @@ class Charger() :
         doc[1] = uid if uid else str(uuid.uuid4())
 
         """ doc가 datatransfer인 경우 문서 추가 렌더링"""
+        print(f'ocpp[1] : {ocpp[1]}')
         if "messageId" in ocpp[1] :
             ddoc = ocpp[1]
+            print(f'doc : {doc[3]}')
             for k in self.confV:
                 tc_render(ddoc, k, self.confV[k])
             doc[3]["messageId"]=ocpp[1]["messageId"]
+            print(f'doc : {doc[3]}')
+
             del ddoc["messageId"]
             doc[3]["data"] = ddoc
+            print(f'doc : {doc[3]}')
 
 
 
@@ -353,13 +356,13 @@ class Charger() :
         self.req_message_history[doc[1]] = doc
         print(doc)
         self.log(f' >> {doc[2]}:{doc}', attr='green')
-        if doc[2] == "BootNotification":
-            #self.charger_status = "Boot"
-            self.change_status("PowerUp")
-        elif doc[2] == "StatusNotification":
-            #self.charger_status = doc[3]["status"]
-            self.change_status(doc[3]["status"])
-        return doc
+        # if doc[2] == "BootNotification":
+        #     #self.charger_status = "Boot"
+        #     self.change_status("PowerUp")
+        # elif doc[2] == "StatusNotification":
+        #     #self.charger_status = doc[3]["status"]
+        #     self.change_status(doc[3]["status"])
+        # return doc
 
 
 
@@ -513,7 +516,8 @@ class Charger() :
                         self.change_list(case, f"{case} (Fail)", attr={'fg': 'red'}, log=result)
 
                         break
-                    schema_check = checkSchema(c[1], recv[3], self.testschem.get())
+                    schema_check = checkSchema(c[1], recv[2], self.testschem.get())
+                    # schema_check = checkSchema(c[1], recv[3], self.testschem.get())
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase message from server, expected ({schema_check[1]})"
                         scases.append(case)

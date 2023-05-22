@@ -268,7 +268,7 @@ class Charger() :
             # 파일 이름이 prefix로 시작하고, 파일인 경우
             if file.startswith(prefix) and os.path.isfile(file):
                 # latest_file이 None일 경우나 현재 파일이 latest_file보다 최신인 경우
-                if latest_file is None or os.path.getmtime(file) > os.path.getmtime(latest_file):
+                if lastest_file is None or os.path.getmtime(file) > os.path.getmtime(lastest_file):
                     latest_file = file
             if lastest_file is not None :
                 with open(latest_file, 'rb') as f:
@@ -743,8 +743,8 @@ class Charger() :
                     print("파일 다운로드 실패:", response.status_code)
             elif message_name == "RemoteStartTransaction":
                 if message[3]["idTag"] :
-                    self.confV["idTag"] = message[3]["idTag"]
-
+                    self.confV["$idTag"] = message[3]["idTag"]
+                    self.confV["$idTag1"] = message[3]["idTag"]
             if message_name and message_name in message_map:
                 return await self.process_message(recvdoc)
 
@@ -780,7 +780,7 @@ class Charger() :
                 else:
                     break
             elif c[0] == "StartTransaction":
-                doc[3]["meterStop"] = self.en_meter.get()
+                doc[3]["meterStart"] = self.en_meter.get()
                 """remote start로 시작한 경우 RemoteStartTrasaction의 chargingProfile에 있던 transactionId를 
                 ReservationId에 할당
                 """

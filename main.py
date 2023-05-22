@@ -12,7 +12,8 @@ from datetime import datetime, timedelta
 from ChargerUtil import tc_render
 class ChargerSim(tk.Tk):
 
-    def __init__(self):
+    def __init__(self, async_loop):
+        self.async_loop = async_loop
         self.TC = None
         self.TC_original = None
         self.TC_selected = {}
@@ -246,19 +247,9 @@ class ChargerSim(tk.Tk):
 
             await charger.standalone(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
 
-            # self.en_status.delete(0, END)
-            # self.en_status.insert(0, "Test Finished")
-            # self.bt_conn['state'] = tk.DISABLED
-            #tkinter.messagebox.showinfo(title="완료", message="TC 수행을 완료했습니다.")
-            # self.txt_tc.delete("0.0", END)
-            # # self.curProgress.set(0)
-            # # self.progressbar.update()
-            # self.bt_start['state'] = tk.DISABLED
-            # self.bt_standalone.config(bg='blue')
         else:
             charger.close()
-            # self.bt_start['state'] = tk.NORMAL
-            # self.bt_standalone.config(bg='yellow')
+
 
     def directClientSend(self):
         # if self.status == 0:
@@ -945,7 +936,7 @@ class ChargerSim(tk.Tk):
         async_mainloop(self.window)
 
 def main(async_loop):
-    ChargerSim()
+    ChargerSim(async_loop)
 
 if __name__ == "__main__":
     async_loop = asyncio.new_event_loop()

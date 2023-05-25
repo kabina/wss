@@ -361,6 +361,8 @@ class Charger() :
             self.change_status("PowerUp")
         elif doc[2] == "StatusNotification":
             #self.charger_status = doc[3]["status"]
+            if self.reserved and doc[3]["status"]=="Available":
+                doc[3]["status"] = "Reserved"
             self.change_status(doc[3]["status"])
         return doc
 
@@ -776,19 +778,19 @@ class Charger() :
                         s = self.soc + 5
                         self.change_soc(s)
                     doc[3]["meterValue"][0]["sampledValue"][0]["value"] = str(v)
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(10)
                 else:
                     break
             elif c[0] == "StartTransaction":
-                doc[3]["meterStart"] = self.en_meter.get()
+                doc[3]["meterStart"] = self.meter
                 """remote start로 시작한 경우 RemoteStartTrasaction의 chargingProfile에 있던 transactionId를 
                 ReservationId에 할당
                 """
                 if self.transactionId > 0 :
                     doc[3]["reservationId"] = self.transactionId
             elif c[0] == "StatusNotification":
-                self.change_status(doc[3]["status"])
-                #self.charger_status = doc[3]["status"]
+                #self.change_status("Reserved" if self.reserved else doc[3]["status"])
+                self.charger_status = doc[3]["status"]
 
             time.sleep(2)
             print(f'doc:{doc}')
@@ -821,9 +823,11 @@ class Charger() :
         await self.sendDocs(doc)
         await asyncio.sleep(0.5)
         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
+
+        self.reserved = True if json.loads(recvdoc)[2]["status"] == "Reserved" else False
         await self.proc_recvdoc(recvdoc)
 
-        doc = self.convertSendDoc(["StatusNotification", {"status": "Available"}])
+        doc = self.convertSendDoc(["StatusNotification", {"status": "Reserved" if self.reserved else "Available"}])
         recvdoc = await self.sendDocs(doc)
         await asyncio.sleep(0.5)
         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
@@ -863,7 +867,7 @@ class Charger() :
                 print("Exception in Init")
                 await self.charger_init()
             except asyncio.TimeoutError as te:
-                print("TimeoutError in standalone")
+                print("## 메시지 수신 대기 중 ##")
                 await asyncio.sleep(2)
                 """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
                 """

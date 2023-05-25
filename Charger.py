@@ -356,47 +356,37 @@ class Charger() :
         self.req_message_history[doc[1]] = doc
         print(doc)
         self.log(f' >> {doc[2]}:{doc}', attr='green')
-        # if doc[2] == "BootNotification":
-        #     #self.charger_status = "Boot"
-        #     self.change_status("PowerUp")
-        # elif doc[2] == "StatusNotification":
-        #     #self.charger_status = doc[3]["status"]
-        #     self.change_status(doc[3]["status"])
-        # return doc
 
+        recv= await self.ws.recv()
+        if recv :
+            print(recv)
+            jrecv = json.loads(recv)
+            if len(jrecv)  == 4 :
+                self.req_message_history[jrecv[1]] = jrecv
+                self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
+                if jrecv[2] in message_map:
+                    await self.process_message(recv)
+            else:
+                self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
+                if(doc[1] != jrecv[1]):
+                    await self.proc_reply(recv)
 
+            # 후처리
+            if doc[2]=="StartTransaction" and jrecv[0] == 3 and "transactionId" in jrecv[2]:
+                self.transactionId = jrecv[2]["transactionId"]
+                self.confV["$transactionId"] = jrecv[2]["transactionId"]
+                self.en_tr.delete(0,END)
+                self.en_tr.insert(0,jrecv[2]["transactionId"])
+                self.confV["$transactionId"] = self.transactionId
 
-
-        #
-        # recv= await self.ws.recv()
-        # if recv :
-        #     print(recv)
-        #     jrecv = json.loads(recv)
-        #     if len(jrecv)  == 4 :
-        #         self.req_message_history[jrecv[1]] = jrecv
-        #         self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
-        #         if jrecv[2] in message_map:
-        #             await self.process_message(recv)
-        #     else:
-        #         self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
-        #         if(doc[1] != jrecv[1]):
-        #             await self.proc_reply(recv)
-        #
-        #     # 후처리
-        #     if doc[2]=="StartTransaction" and jrecv[0] == 3 and "transactionId" in jrecv[2]:
-        #         self.transactionId = jrecv[2]["transactionId"]
-        #         self.confV["$transactionId"] = jrecv[2]["transactionId"]
-        #         self.en_tr.delete(0,END)
-        #         self.en_tr.insert(0,jrecv[2]["transactionId"])
-        #         self.confV["$transactionId"] = self.transactionId
-        #     elif doc[2]=="StopTransaction":
-        #         self.transactionId = 0
-        #     elif doc[2]=="BootNotification" :
-        #         self.interval = jrecv[2]["interval"]
-        #         self.charger_configuration["HeartbeatInterval"] = self.interval
-        #     elif doc[2]=="StatusNotification" :
-        #         self.charger_status = doc[3]["status"]
-        #     return jrecv
+            elif doc[2]=="StopTransaction":
+                self.transactionId = 0
+            elif doc[2]=="BootNotification" :
+                self.interval = jrecv[2]["interval"]
+                self.charger_configuration["HeartbeatInterval"] = self.interval
+            elif doc[2]=="StatusNotification" :
+                self.charger_status = doc[3]["status"]
+            return jrecv
 
     async def proc_message(self, recvdoc):
         jrecvdoc = json.loads(recvdoc)
@@ -781,7 +771,7 @@ class Charger() :
                 else:
                     break
             elif c[0] == "StartTransaction":
-                doc[3]["meterStop"] = self.en_meter.get()
+                doc[3]["meterStart"] = self.en_meter.get()
                 """remote start로 시작한 경우 RemoteStartTrasaction의 chargingProfile에 있던 transactionId를 
                 ReservationId에 할당
                 """

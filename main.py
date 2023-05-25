@@ -637,7 +637,7 @@ class ChargerSim(tk.Tk):
 
 
         for idx, c in enumerate(protocol_keys):
-            stCharger = ttk.Label(self.frameBtChargers, text='대기중', width=12, anchor="center", style='BLabel.TLabel')
+            stCharger = ttk.Label(self.frameBtChargers, text='Offline', width=12, anchor="center", style='BLabel.TLabel')
             stCharger.grid(row=5, column=idx, sticky="we")
             self.chargerstatuses.append(stCharger)
 

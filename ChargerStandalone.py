@@ -833,12 +833,27 @@ class Charger() :
         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
         await self.proc_recvdoc(recvdoc)
 
+    async def websocket_handler(self, queue):
+        while True:
+                # Receive data from the WebSocket
+            await queue.put(await asyncio.wait_for(self.ws.recv(), timeout=1.0))
+
+    async def keyboard_input_handler(self, queue):
+        import aioconsole
+        while True:
+            # Receive keyboard input asynchronously
+            key = await aioconsole.ainput()
+            await queue.put(key)
+            if key == "\x13":  # Check if CTRL+S (ASCII code 19) is pressed
+                return True
+
     async def standalone(self, cases):
         """
         전문 처리, 선택된 TC셋을 받아 TC시나리오 내 개별 TC를 처리
         :param cases: 전문 셋(TC별 전문)
         :return: None
         """
+        from asyncio import Queue
         self.status = 0
         print("IN STANDALONE")
         cur_idx = self.lst_cases.curselection()
@@ -846,6 +861,7 @@ class Charger() :
         self.lst_cases.selection_clear(cur_idx+1,END)
         import requests
         start_time = time.time()
+        queue = Queue()
 
         await self.charger_init()
         while(True) :
@@ -855,6 +871,10 @@ class Charger() :
                 """
                 if self.ws.closed :
                     await self.charger_init()
+                # websocket_task = asyncio.ensure_future(self.websocket_handler(queue))
+                # keyboard_task = asyncio.ensure_future(self.keyboard_input_handler(queue))
+                # await asyncio.gather(websocket_task, keyboard_task)
+                # print(f"queue:{queue}")
                 recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
                 if recvdoc == None or len(recvdoc) == 0:
                     continue

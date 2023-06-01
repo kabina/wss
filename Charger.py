@@ -284,7 +284,8 @@ class Charger() :
         :return: None
         """
         await self.ws.send(json.dumps(ocpp))
-        self.log(f' >> {self.req_message_history[ocpp[1]][2]}:{ocpp}', attr='green')
+        # TC Test에서는 불필요
+        self.log(f' >> Reply:{ocpp}', attr='green')
 
     def convertDocs(self, doc):
         for k in self.confV:
@@ -506,8 +507,8 @@ class Charger() :
                         self.change_list(case, f"{case} (Fail)", attr={'fg': 'red'}, log=result)
 
                         break
-                    schema_check = checkSchema(c[1], recv[2], self.testschem.get())
-                    # schema_check = checkSchema(c[1], recv[3], self.testschem.get())
+                    # schema_check = checkSchema(c[1], recv[2], self.testschem)
+                    schema_check = checkSchema(c[1], recv[3], self.testschem)
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase message from server, expected ({schema_check[1]})"
                         scases.append(case)
@@ -526,14 +527,14 @@ class Charger() :
                     self.txt_tc.delete(1.0, END)
                     self.txt_tc.insert(END, json.dumps(doc, indent=2))
 
-                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem.get()) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
+                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
                     if not schema_check[0] :
                         result = f" Fail ( Invalid testcase sending message from server. {schema_check[1]} )"
                         scases.append(case)
                         self.change_list(case, f"{case} (Fail)", attr={'fg':'red'}, log=result)
                         break
                     recv = await self.sendDocs(doc)
-                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem.get()) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
+                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase recv message from server. {schema_check[1]} )"
                         scases.append(case)

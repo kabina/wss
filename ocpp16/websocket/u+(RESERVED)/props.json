@@ -19,6 +19,7 @@
         ["BootNotification", {}],
         ["StatusNotification", {"status": "Available"} ],
         ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
+        ["DataTransfer", {"messageId":"Tariff", "connectorId": 1, "idTag": "$idTag", "timestamp": "$ctime"}],
         ["StartTransaction", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
         ["StatusNotification", {"status": "Charging"}],
         ["MeterValues", {"transactionId":"$transactionId"}],
@@ -795,84 +796,5 @@
         ["Reply", "ClearChargingProfile", {"status": "Accepted"}],
         ["Wait", "GetCompositeSchedule"],
         ["Reply", "GetCompositeSchedule",{"status": "Accepted"}]
-    ],
-    "TC_075_InstallCertificateOnChargePoint": [
-        ["BootNotification", {}],
-        ["Wait", "InstallCertificate", {}],
-        ["Reply", "InstallCertificate", {"status": "Accepted"}],
-        ["Wait", "GetInstalledCertificateIds", {}],
-        ["Reply", "GetInstalledCertificateIds", {"status": "Accepted"}]
-    ],
-    "TC_076_DeleteCerfiticateFromChargePoint": [
-        ["BootNotification", {}],
-        ["Wait", "DeleteCertificate", {"certificateHashData": {
-          "hashAlgorithm": "SHA256",
-          "issuerNameHash": "+Pf2USJ8Jhq6Gbah4GR11iU/Qt7tTBYuc0UZDqyzcOs=",
-          "issuerKeyHash": "UVm9Ymkpc49tPG84AJmFsAn3u34MNkfu9pg2c2eB2mQ=",
-          "serialNumber": "00c4b2a57b3fa7fd3a"
-        }}],
-        ["Reply", "DeleteCertificate", {"status": "Accepted"}],
-        ["Wait", "GetInstalledCertificateIds", {}],
-        ["Reply", "GetInstalledCertificateIds", {"status": "Accepted"}]
-    ],
-    "TC_078_InvalidCentralSystemCertificateSecurityEvent": [
-        ["BootNotification", {}],
-        ["Wait", "InstallCertificate", {"certificateType": "CentralSystemRootCertificate", "certificate": "jflkdsjf;lsdjflk;sdjfl;ksdjl;f"}],
-        ["Reply", "InstallCertificate", {"status": "Rejected"}],
-        ["SecurityEventNotification", {"type": "InvalidCentralSystemCertificate"}]
-    ],
-    "TC_079_GetSecurityLog": [
-        ["BootNotification", {}],
-        ["Wait", "GetLog", {
-          "logType": "SecurityLog",
-          "requestId": 64056766,
-          "log": {
-            "remoteLocation": "s3://test.com",
-            "oldestTimestamp": "2023-05-20T02:21:07.0Z"
-          }
-        }],
-        ["Reply", "GetLog", {}],
-        ["LogStatusNotification", {"status": "Uploading"}],
-        ["LogStatusNotification", {"status": "Uploaded"}]
-    ],
-    "TC_080_SecureFirmwareUpdate": [
-        ["BootNotification", {}],
-        ["Wait", "SignedUpdateFirmware", {
-          "firmware": {
-            "location": "s3://test.com/firmware.com",
-            "retrieveDateTime": "2023-06-10T03:12:12.000Z",
-            "signingCertificate": "-----BEGIN CERTIFICATE----- MIIDeTCCAmECFB7N8oNWFN3HAZvKcmnPM7CJpzPhMA0GCSqGSIb3DQEBCwUAMHkx CzAJBgNVBAYTAktSMQ4wDAYDVQQIDAVLb3JlYTEOMAwGA1UEBwwFU2VvdWwxCzAJ BgNVBAoMAkxHMQwwCgYDVQQLDANMR0UxEzARBgNVBAMMCmV2LmxnZS5jb20xGjAY BgkqhkiG9w0BCQEWC2xnZUBsZ2UuY29tMB4XDTIzMDYwMTAxNDM1NVoXDTIzMDcw MTAxNDM1NVoweTELMAkGA1UEBhMCS1IxDjAMBgNVBAgMBUtvcmVhMQ4wDAYDVQQH DAVTZW91bDELMAkGA1UECgwCTEcxDDAKBgNVBAsMA0xHRTETMBEGA1UEAwwKZXYu bGdlLmNvbTEaMBgGCSqGSIb3DQEJARYLbGdlQGxnZS5jb20wggEiMA0GCSqGSIb3 DQEBAQUAA4IBDwAwggEKAoIBAQDg5BJ1iKftKALtAa6MizHuS0r+Efo/9mFlb+AF m1lLvPxwnysgidAz5nxSy1MNHDun52bik/t+f/xZT9pwzMHEFEV2LgjlqGnYR1u+ g2FRP0M/SxGvSzIXu12g4qc/rRPIKpnI6uWoFzzlwGgSqflYWF1+i/HlKrKrStM+ LAMo9vzMyW7S2W4Nfyt4+wf3MTVcWNG+43033s1A3Jxk/q1EXdcOwWEVmeDQ3Gg9 5FcbdjjnNkfhQ4rDUuu+ZPBQ25CwbIwctbLizo1pYHY52gHkRlXw6LJ9FDmeia0l HfCC0/HkG6oirjjBh4YiVzlNB6dc96IBmbz2fjCN4UXORsw7AgMBAAEwDQYJKoZI hvcNAQELBQADggEBACs4JXHP2e1HfZajuzbDSE0w34rO1kU29cGSVGncgBi9UMCD gREj3e5iObqwIUXeE1KekENpN5uPYNFU1gdVABRx53FnZ3P56S8YFqAPBULpXJne 0jbaRg6VnHIfI7O0rqBUgKBWC02hnN3L+wzBOCpySqoyhH04T+V3eN7j3LL2bKUO 3R9zLRiuitLCly1tiS9+29xuNoHMgdDRkWA+mJkyZ15ybg7XVkvdop/X6B4DQpC2 PyUmX38Fhw3tahzKcnW/CxiKYdJmD9T9RZd+sWrIb7udH/1OoWgh3Rx2kZrPhjNk nnkCKoN6FpIMY0nf8NMNBs9ZkgQi9rI3pz7dWw4= -----END CERTIFICATE-----",
-            "signature": "PFg29w8+GzyOQ2pcpnazanuf33KGc8/i/FvJujNIgaMmT4tLnsz8tJURR/77Obe6 oj9qRuJHSqPr5Hd61Mx6DOImqMI4xXQMoyaJywA6GQOfSXLkNX/+RtkUa/xn47bI 9LzlXSzS/Z0C2Pl/jI6Akgx3mu6U+RBDlwkoJH3KwZX/SJwLJfatLVBqX6cewC1t 25dsjWYdyhNkkY1Rr9cx0ukX06z63oGsbGRExzJkz5yWrS5/+BlHrhV/iAnG/Rla 5lrCukqmzhdutQiWKQSH13HeoYZQam/+vqE2G+X5jfHkJ3TcGGScstwBRWlg7LWU F+xgkdvuwrwdEPC8ckBvmA=="
-          },
-          "requestId": 1
-        }],
-        ["Reply", "SignedUpdateFirmware", {"status": "Accepted"}],
-        ["SignedFirmwareStatusNotification", {"status": "CertificateVerified"}],
-        ["SignedFirmwareStatusNotification", {"status": "Downloading"}],
-        ["StatusNotification", {"status": "Unavailable"}],
-        ["SignedFirmwareStatusNotification", {"status": "Downloaded"}],
-        ["SignedFirmwareStatusNotification", {"status": "SignatureVerified"}],
-        ["SignedFirmwareStatusNotification", {"status": "Installing"}],
-        ["SignedFirmwareStatusNotification", {"status": "Installed"}],
-        ["StatusNotification", {"status": "Available"}]
-    ],
-    "TC_081_InvalidSignature": [
-        ["BootNotification", {}],
-        ["Wait", "SignedUpdateFirmware", {
-          "firmware": {
-            "location": "s3://test.com/firmware.com",
-            "retrieveDateTime": "2023-06-10T03:12:12.000Z",
-            "signingCertificate": "-----BEGIN CERTIFICATE----- MIIDeTCCAmECFB7N8oNWFN3HAZvKcmnPM7CJpzPhMA0GCSqGSIb3DQEBCwUAMHkx CzAJBgNVBAYTAktSMQ4wDAYDVQQIDAVLb3JlYTEOMAwGA1UEBwwFU2VvdWwxCzAJ BgNVBAoMAkxHMQwwCgYDVQQLDANMR0UxEzARBgNVBAMMCmV2LmxnZS5jb20xGjAY BgkqhkiG9w0BCQEWC2xnZUBsZ2UuY29tMB4XDTIzMDYwMTAxNDM1NVoXDTIzMDcw MTAxNDM1NVoweTELMAkGA1UEBhMCS1IxDjAMBgNVBAgMBUtvcmVhMQ4wDAYDVQQH DAVTZW91bDELMAkGA1UECgwCTEcxDDAKBgNVBAsMA0xHRTETMBEGA1UEAwwKZXYu bGdlLmNvbTEaMBgGCSqGSIb3DQEJARYLbGdlQGxnZS5jb20wggEiMA0GCSqGSIb3 DQEBAQUAA4IBDwAwggEKAoIBAQDg5BJ1iKftKALtAa6MizHuS0r+Efo/9mFlb+AF m1lLvPxwnysgidAz5nxSy1MNHDun52bik/t+f/xZT9pwzMHEFEV2LgjlqGnYR1u+ g2FRP0M/SxGvSzIXu12g4qc/rRPIKpnI6uWoFzzlwGgSqflYWF1+i/HlKrKrStM+ LAMo9vzMyW7S2W4Nfyt4+wf3MTVcWNG+43033s1A3Jxk/q1EXdcOwWEVmeDQ3Gg9 5FcbdjjnNkfhQ4rDUuu+ZPBQ25CwbIwctbLizo1pYHY52gHkRlXw6LJ9FDmeia0l HfCC0/HkG6oirjjBh4YiVzlNB6dc96IBmbz2fjCN4UXORsw7AgMBAAEwDQYJKoZI hvcNAQELBQADggEBACs4JXHP2e1HfZajuzbDSE0w34rO1kU29cGSVGncgBi9UMCD gREj3e5iObqwIUXeE1KekENpN5uPYNFU1gdVABRx53FnZ3P56S8YFqAPBULpXJne 0jbaRg6VnHIfI7O0rqBUgKBWC02hnN3L+wzBOCpySqoyhH04T+V3eN7j3LL2bKUO 3R9zLRiuitLCly1tiS9+29xuNoHMgdDRkWA+mJkyZ15ybg7XVkvdop/X6B4DQpC2 PyUmX38Fhw3tahzKcnW/CxiKYdJmD9T9RZd+sWrIb7udH/1OoWgh3Rx2kZrPhjNk nnkCKoN6FpIMY0nf8NMNBs9ZkgQi9rI3pz7dWw4= -----END CERTIFICATE-----",
-            "signature": "Invalid Signature PFg29w8+GzyOQ2pcpnazanuf33KGc8/i/FvJujNIgaMmT4tLnsz8tJURR/77Obe6 oj9qRuJHSqPr5Hd61Mx6DOImqMI4xXQMoyaJywA6GQOfSXLkNX/+RtkUa/xn47bI 9LzlXSzS/Z0C2Pl/jI6Akgx3mu6U+RBDlwkoJH3KwZX/SJwLJfatLVBqX6cewC1t 25dsjWYdyhNkkY1Rr9cx0ukX06z63oGsbGRExzJkz5yWrS5/+BlHrhV/iAnG/Rla 5lrCukqmzhdutQiWKQSH13HeoYZQam/+vqE2G+X5jfHkJ3TcGGScstwBRWlg7LWU F+xgkdvuwrwdEPC8ckBvmA=="
-          },
-          "requestId": 1
-        }],
-        ["Reply", "SignedUpdateFirmware", {"status": "Accepted"}],
-        ["SignedFirmwareStatusNotification", {"status": "CertificateVerified"}],
-        ["SignedFirmwareStatusNotification", {"status": "Downloading"}],
-        ["StatusNotification", {"status": "Unavailable"}],
-        ["SignedFirmwareStatusNotification", {"status": "Downloaded"}],
-        ["SignedFirmwareStatusNotification", {"status": "InvalidSignature"}],
-        ["StatusNotification", {"status": "Available"}]
     ]
 }

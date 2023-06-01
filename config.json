@@ -13,8 +13,8 @@
 
   ],
   "urls": {
-    "rest": "https://rgw.stgevspcharger.uplus.co.kr/ioc",
-    "wss": "wss://ws.stgevspcharger.uplus.co.kr"
+    "rest": "https://rgw.devevspcharger.uplus.co.kr/ioc",
+    "wss": "wss://ws.devevspcharger.uplus.co.kr"
   },
   "properties": {
     "protocol": {

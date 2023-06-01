@@ -530,5 +530,20 @@
     "321312312",
     {
     }
+  ],
+    "SignedFirmwareStatusNotification": [
+    2,
+    "321312312",
+    "SignedFirmwareStatusNotification",
+    {
+    "status": "InvalidSignature",
+    "requestId": 0
+    }
+  ],
+    "SignedFirmwareStatusNotificationResponse": [
+    2,
+    "321312312",
+    {
+    }
   ]
 }

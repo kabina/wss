@@ -5,6 +5,7 @@ from socket import socket
 import websockets
 import json
 import uuid
+from OpenSSL import crypto
 from colorlog import ColoredFormatter
 import urllib3
 from datetime import datetime
@@ -14,6 +15,7 @@ import timeit
 import time
 from collections import deque
 import ChargerUtil
+
 from ChargerUtil import checkSchema, tc_render, message_map, Config, DataTransferMessage, RequestMessages
 lock = asyncio.Lock()
 
@@ -172,11 +174,19 @@ class Charger() :
         except Exception as e:
             pass
 
+    def convert_to_pem(self, cert_data):
+        import OpenSSL
+        # PEM 형식으로 변환하기 위해 OpenSSL.crypto 모듈 사용
+        cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_ASN1, cert_data)
+        pem_cert = OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
+        return pem_cert.decode('utf-8')
+
     async def conn(self, case, type=None):
         if len(case.split('_')) > 1 and 46 <= int(case.split('_')[1]) <= 53 :
             wss_url = f'{self.config.wss_url}/{self.mdl}/{self.config.rsno}'
         else:
             wss_url = f'{self.config.wss_url}/{self.mdl}/{self.config.sno}'
+        print(f'wss_url:{wss_url}')
         try :
             # if type == "standalone":
             #     wss_url = "wss://192.168.0.152:8765"
@@ -193,18 +203,34 @@ class Charger() :
                 extra_headers={"Authorization": self.config.auth_token},
                 ssl=ssl_context
             )
-            from OpenSSL import crypto
+
             import base64
+            import ssl
+            from OpenSSL import crypto
+            from cryptography import x509
+            from cryptography.hazmat.backends import default_backend
             sslcontext = self.ws.transport.get_extra_info('sslcontext')
             """Server인증서 수신 및 Text 변환 출력"""
             server_cert = self.ws.transport.get_extra_info('ssl_object').getpeercert(binary_form=True)
             # X509 객체로 변환
-            x509 = crypto.load_certificate(crypto.FILETYPE_ASN1, server_cert)
+
+            x509cert = crypto.load_certificate(crypto.FILETYPE_ASN1, server_cert)
+            pub_key_obj = x509cert.get_pubkey()
+            pub_key_str = crypto.dump_publickey(crypto.FILETYPE_PEM, pub_key_obj)
+            pub_key_pem = ssl.DER_cert_to_PEM_cert(pub_key_str)
+            print("*"*100)
+            print(pub_key_pem)
+
+            server_str = crypto.dump_certificate(crypto.FILETYPE_PEM, x509cert)
+            server_pem = ssl.DER_cert_to_PEM_cert(server_str)
+            print("*" * 100)
+            print(server_pem)
+
             # 인증서의 텍스트 형식으로 변환
-            cert_text = crypto.dump_certificate(crypto.FILETYPE_TEXT, x509)
-            #print(str(cert_text.decode('utf-8')))
+            # cert_text = crypto.dump_certificate(crypto.FILETYPE_PEM, x509)
+            # print(str(cert_text.decode('utf-8')))
             # base64로 인코딩하여 출력
-            #print(base64.b64encode(cert_text).decode())
+            # print(base64.b64encode(cert_text).decode())
             cipher_list = sslcontext.get_ciphers()
 
             print("서버지원 가능 목록+++++++++++++++++++++++++++")
@@ -228,6 +254,7 @@ class Charger() :
 
             # print("Cipher suite used in WebSocket connection:", sslopt_ciphers)
         except Exception as err:
+            print(err.with_traceback())
             self.log(str(err))
             self.log(" 연결에 실패했습니다", attr="red")
 
@@ -518,7 +545,7 @@ class Charger() :
                         self.change_list(case, f"{case} (Fail)", attr={'fg': 'red'}, log=result)
 
                         break
-                    schema_check = checkSchema(c[1], recv[3], self.testschem.get())
+                    schema_check = checkSchema(c[1], recv[3], self.testschem)
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase message from server, expected ({schema_check[1]})"
                         scases.append(case)
@@ -537,14 +564,14 @@ class Charger() :
                     self.txt_tc.delete(1.0, END)
                     self.txt_tc.insert(END, json.dumps(doc, indent=2))
 
-                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem.get()) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
+                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
                     if not schema_check[0] :
                         result = f" Fail ( Invalid testcase sending message from server. {schema_check[1]} )"
                         scases.append(case)
                         self.change_list(case, f"{case} (Fail)", attr={'fg':'red'}, log=result)
                         break
                     recv = await self.sendDocs(doc)
-                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem.get()) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
+                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase recv message from server. {schema_check[1]} )"
                         scases.append(case)
@@ -675,6 +702,7 @@ class Charger() :
 
         # 수신 메시지에 대한 Response 처리 (2,3  모두 Response 처리) 3은 화면 로그만 출력
         if recvdoc:
+
             self.start_time = time.time()
             message = json.loads(recvdoc)
             # 수신 로그 출력
@@ -693,7 +721,11 @@ class Charger() :
             if message[0] == 3:
                 return True
 
+            valid_schema = checkSchema(message[2], message[3], self.testschem)
+            if not valid_schema :
+                self.log(f' 수신 전문 오류 {valid_schema[1]}')
             message_name = message[2]
+
             # 메시지가 송신에 대한 응답인 경우
             print(f'proc_recvdoc:{recvdoc}')
             """recv가 2이면서 개별 처리건의 메시지의 경우 처리 """

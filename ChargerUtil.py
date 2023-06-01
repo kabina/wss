@@ -27,7 +27,7 @@ def checkSchema(original, target, schema):
     :param target: 점검 대상 Json 본체
     :return: True : 규격 동일, False: 규격 다름
     """
-    if schema.startswith("DataTransfer"):
+    if original.startswith("DataTransfer"):
         return True, None
     try:
         schema = open(f"./{schema}/schemas/" + original + ".json").read().encode('utf-8')

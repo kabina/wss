@@ -812,8 +812,12 @@
           "serialNumber": "00c4b2a57b3fa7fd3a"
         }}],
         ["Reply", "DeleteCertificate", {"status": "Accepted"}],
-        ["Wait", "GetInstalledCertificateIds", {}],
-        ["Reply", "GetInstalledCertificateIds", {"status": "Accepted"}]
+        ["Wait", "GetInstalledCertificateIds", {"certificateType": "CentralSystemRootCertificate"}],
+        ["Reply", "GetInstalledCertificateIds", {         "hashAlgorithm": "SHA256",
+          "issuerNameHash": "+Pf2USJ8Jhq6Gbah4GR11iU/Qt7tTBYuc0UZDqyzcOs=",
+          "issuerKeyHash": "UVm9Ymkpc49tPG84AJmFsAn3u34MNkfu9pg2c2eB2mQ=",
+          "serialNumber": "00c4b2a57b3fa7fd3a"
+        }]
     ],
     "TC_078_InvalidCentralSystemCertificateSecurityEvent": [
         ["BootNotification", {}],

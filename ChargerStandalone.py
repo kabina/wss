@@ -222,6 +222,7 @@ class Charger() :
             print(pub_key_pem)
 
             server_str = crypto.dump_certificate(crypto.FILETYPE_PEM, x509cert)
+            print(server_str)
             server_pem = ssl.DER_cert_to_PEM_cert(server_str)
             print("*" * 100)
             print(server_pem)

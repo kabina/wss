@@ -29,11 +29,18 @@ def checkSchema(original, target, schema):
     """
     if original.startswith("DataTransfer"):
         return True, None
+    schema_file = f"./{schema}/schemas/" + original + ".json"
     try:
-        schema = open(f"./{schema}/schemas/" + original + ".json").read().encode('utf-8')
+        schema = open(schema_file).read().encode('utf-8')
         jsonschema.validate(instance=target, schema=json.loads(schema))
-    except jsonschema.exceptions.ValidationError as e:
-        return False, e.message, target
+    except Exception as e:
+        from jsonschema import RefResolver
+        try :
+            print(schema)
+            resolver = RefResolver.from_schema(json.loads(schema))
+            jsonschema.validate(instance=target, schema=schema, resolver=resolver)
+        except jsonschema.exceptions.ValidationError as e:
+            return False, e.message, target
     return True, None
 
 

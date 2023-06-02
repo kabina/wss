@@ -508,6 +508,9 @@ class Charger() :
 
                         break
                     # schema_check = checkSchema(c[1], recv[2], self.testschem)
+                    print(f'{c[1]}')
+                    print(f'{recv[3]}')
+                    print(f'{self.testschem}')
                     schema_check = checkSchema(c[1], recv[3], self.testschem)
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase message from server, expected ({schema_check[1]})"

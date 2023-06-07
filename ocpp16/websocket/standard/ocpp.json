@@ -421,7 +421,7 @@
     "InstallCertificate",
     {
       "certificateType": "CentralSystemRootCertificate",
-      "certificate": ""
+      "certificate": "-----BEGIN CERTIFICATE----- MIIDeTCCAmECFB7N8oNWFN3HAZvKcmnPM7CJpzPhMA0GCSqGSIb3DQEBCwUAMHkx CzAJBgNVBAYTAktSMQ4wDAYDVQQIDAVLb3JlYTEOMAwGA1UEBwwFU2VvdWwxCzAJ BgNVBAoMAkxHMQwwCgYDVQQLDANMR0UxEzARBgNVBAMMCmV2LmxnZS5jb20xGjAY BgkqhkiG9w0BCQEWC2xnZUBsZ2UuY29tMB4XDTIzMDYwMTAxNDM1NVoXDTIzMDcw MTAxNDM1NVoweTELMAkGA1UEBhMCS1IxDjAMBgNVBAgMBUtvcmVhMQ4wDAYDVQQH DAVTZW91bDELMAkGA1UECgwCTEcxDDAKBgNVBAsMA0xHRTETMBEGA1UEAwwKZXYu bGdlLmNvbTEaMBgGCSqGSIb3DQEJARYLbGdlQGxnZS5jb20wggEiMA0GCSqGSIb3 DQEBAQUAA4IBDwAwggEKAoIBAQDg5BJ1iKftKALtAa6MizHuS0r+Efo/9mFlb+AF m1lLvPxwnysgidAz5nxSy1MNHDun52bik/t+f/xZT9pwzMHEFEV2LgjlqGnYR1u+ g2FRP0M/SxGvSzIXu12g4qc/rRPIKpnI6uWoFzzlwGgSqflYWF1+i/HlKrKrStM+ LAMo9vzMyW7S2W4Nfyt4+wf3MTVcWNG+43033s1A3Jxk/q1EXdcOwWEVmeDQ3Gg9 5FcbdjjnNkfhQ4rDUuu+ZPBQ25CwbIwctbLizo1pYHY52gHkRlXw6LJ9FDmeia0l HfCC0/HkG6oirjjBh4YiVzlNB6dc96IBmbz2fjCN4UXORsw7AgMBAAEwDQYJKoZI hvcNAQELBQADggEBACs4JXHP2e1HfZajuzbDSE0w34rO1kU29cGSVGncgBi9UMCD gREj3e5iObqwIUXeE1KekENpN5uPYNFU1gdVABRx53FnZ3P56S8YFqAPBULpXJne 0jbaRg6VnHIfI7O0rqBUgKBWC02hnN3L+wzBOCpySqoyhH04T+V3eN7j3LL2bKUO 3R9zLRiuitLCly1tiS9+29xuNoHMgdDRkWA+mJkyZ15ybg7XVkvdop/X6B4DQpC2 PyUmX38Fhw3tahzKcnW/CxiKYdJmD9T9RZd+sWrIb7udH/1OoWgh3Rx2kZrPhjNk nnkCKoN6FpIMY0nf8NMNBs9ZkgQi9rI3pz7dWw4= -----END CERTIFICATE-----"
     }
   ],
       "InstallCertificateResponse": [
@@ -541,7 +541,22 @@
     }
   ],
     "SignedFirmwareStatusNotificationResponse": [
+    3,
+    "321312312",
+    {
+    }
+  ],
+    "LogStatusNotification": [
     2,
+    "321312312",
+    "LogStatusNotification",
+    {
+      "status": "Uploading",
+      "requestId": 49356646
+    }
+  ],
+    "LogStatusNotificationResponse": [
+    3,
     "321312312",
     {
     }

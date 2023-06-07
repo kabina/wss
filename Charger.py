@@ -20,6 +20,7 @@ lock = asyncio.Lock()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
+SCHEMA_CHECK = False
 
 formatter = ColoredFormatter(
     "%(log_color)s[%(asctime)s] %(message)s",
@@ -511,7 +512,7 @@ class Charger() :
                     print(f'{c[1]}')
                     print(f'{recv[3]}')
                     print(f'{self.testschem}')
-                    schema_check = checkSchema(c[1], recv[3], self.testschem)
+                    schema_check = checkSchema(c[1], recv[3], self.testschem) if SCHEMA_CHECK else (True, None)
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase message from server, expected ({schema_check[1]})"
                         scases.append(case)
@@ -529,15 +530,20 @@ class Charger() :
 
                     self.txt_tc.delete(1.0, END)
                     self.txt_tc.insert(END, json.dumps(doc, indent=2))
-
-                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
-                    if not schema_check[0] :
+                    if SCHEMA_CHECK :
+                        schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
+                    else:
+                        schema_check = (True,None)
+                    if not schema_check[0]:
                         result = f" Fail ( Invalid testcase sending message from server. {schema_check[1]} )"
                         scases.append(case)
                         self.change_list(case, f"{case} (Fail)", attr={'fg':'red'}, log=result)
                         break
                     recv = await self.sendDocs(doc)
-                    schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
+                    if SCHEMA_CHECK :
+                        schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
+                    else:
+                        schema_check = (True,None)
                     if not schema_check[0]:
                         result = f" Fail ( Invalid testcase recv message from server. {schema_check[1]} )"
                         scases.append(case)

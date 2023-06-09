@@ -1,7 +1,9 @@
 import jsonschema, json
 from datetime import datetime
 from collections import OrderedDict
-
+import urllib3
+from jsonschema import validate, RefResolver
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class RequestMessages(OrderedDict):
     def __init__(self, max_size):
         super().__init__()
@@ -31,16 +33,13 @@ def checkSchema(original, target, schema):
         return True, None
     schema_file = f"./{schema}/schemas/" + original + ".json"
     try:
-        schema = open(schema_file).read().encode('utf-8')
-        jsonschema.validate(instance=target, schema=json.loads(schema))
-    except Exception as e:
-        from jsonschema import RefResolver
-        try :
-            print(schema)
-            resolver = RefResolver.from_schema(json.loads(schema))
-            jsonschema.validate(instance=target, schema=schema, resolver=resolver)
-        except jsonschema.exceptions.ValidationError as e:
-            return False, e.message, target
+        with open(schema_file, encoding='utf-8') as f:
+            schema = json.load(f)
+        resolver = RefResolver.from_schema(schema)
+        validate(target, schema, resolver=resolver)
+    except jsonschema.exceptions.ValidationError as e:
+
+        return False, e.message, target
     return True, None
 
 
@@ -157,86 +156,9 @@ message_map = {
                     ["StartTransaction",{"reservationId":"$transactionId"}],
                     ["StatusNotification",{"status":"Charging"}],
                     ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}],
-                    ["MeterValues", {}]
+                    ["StopTransaction", {}],
+                    ["StatusNotification", {"status": "Finishing"}],
+                    ["StatusNotification", {"status": "Available"}]
                 ],
                 "RemoteStopTransaction":[
                     ["StopTransaction",{}],

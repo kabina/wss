@@ -20,7 +20,7 @@ lock = asyncio.Lock()
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-SCHEMA_CHECK = False
+SCHEMA_CHECK = True
 
 formatter = ColoredFormatter(
     "%(log_color)s[%(asctime)s] %(message)s",

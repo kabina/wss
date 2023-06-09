@@ -13,8 +13,8 @@
 
   ],
   "urls": {
-    "rest": "https://rgw.devevspcharger.uplus.co.kr/ioc",
-    "wss": "wss://ws.devevspcharger.uplus.co.kr"
+    "rest": "https://rgw.stgevspcharger.uplus.co.kr/ioc",
+    "wss": "wss://ws.stgevspcharger.uplus.co.kr"
   },
   "properties": {
     "protocol": {
@@ -81,11 +81,11 @@
       "ocpp16/websocket/Highspeed": {
         "chrstn_nm": "u+마곡사옥개발1번",
         "vendor": "EVAR",
-        "crgr_sno": "ELC050C-001-001",
-        "crgr_rsno": "ELC050C-001-001",
-        "crgr_cid": "115001513071C",
-        "crgr_rcid": "115001513071C",
-        "crgr_mdl": "ELC050C-001",
+        "crgr_sno": "FF0000201703",
+        "crgr_rsno": "FF0000201703",
+        "crgr_cid": "281850019031C",
+        "crgr_rcid": "281850019031C",
+        "crgr_mdl": "JC-9933-TM2KD-3",
         "auth_token": "Basic RVZBUjpFVkFSTEdV",
         "idTag1": "1031040000069641",
         "idTag2": "1031040000069642",

@@ -96,7 +96,9 @@ class Charger() :
         self.en_meter = config.en_meter
         self.en_soc = config.en_soc
         self.interval = 300
+        self.start_meter = 0
         self.meter = 0
+        self.req_watt = 0
         self.en_vendor = config.en_vendor
         self.charger_meter = config.charger_meter
         self.charger_soc = config.charger_soc
@@ -619,7 +621,6 @@ class Charger() :
             # self.log(f' << {inprog_name}:{msg}', attr='blue')
             # Server Response 후처리 주로 charger 내부변수 및 UI 값 변경
             orgmsg = self.req_message_history[jmsg[1]]
-            print(orgmsg)
             if orgmsg[2] == "StartTransaction" and jmsg[0] == 3 and "transactionId" in jmsg[2]:
                 self.transactionId = jmsg[2]["transactionId"]
                 self.confV["$transactionId"] = jmsg[2]["transactionId"]
@@ -632,6 +633,8 @@ class Charger() :
                 self.confV["$transactionId"] = 0
                 self.en_tr.delete(0, END)
                 self.en_tr.insert(0, "0")
+            elif orgmsg[2] == "DataTransfer" and orgmsg[3]["messageId"]=="chargeValue":
+                self.req_watt = int(jmsg[2]["data"]["watt"])
             elif orgmsg[2] == "BootNotification":
                 self.interval = jmsg[2]["interval"]
                 self.charger_configuration["HeartbeatInterval"] = self.interval
@@ -649,7 +652,6 @@ class Charger() :
             senddoc = self.convertSendDoc([f'{inprog_name}Response', {}], uid=jmsg[1], options=RESPONSE)
             if inprog_name == "RemoteStartTransaction":
                 senddoc[2]["status"] = "Accepted"
-                print(f'reply:{jmsg}')
                 self.transactionId = jmsg[3]["chargingProfile"]["transactionId"]
                 self.confV["$transactionId"] = self.transactionId
                 self.en_tr.delete(0,END)
@@ -722,9 +724,9 @@ class Charger() :
             if message[0] == 3:
                 return True
 
-            valid_schema = checkSchema(message[2], message[3], self.testschem)
-            if not valid_schema :
-                self.log(f' 수신 전문 오류 {valid_schema[1]}')
+            # valid_schema = checkSchema(message[2], message[3], self.testschem)
+            # if not valid_schema :
+            #     self.log(f' 수신 전문 오류 {valid_schema[1]}')
             message_name = message[2]
 
             # 메시지가 송신에 대한 응답인 경우
@@ -788,7 +790,20 @@ class Charger() :
             #     self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
             return True
 
-
+    async def interim_recv(self):
+            try:
+                """Message Map 수행 중 수신되는 메시지 처리"""
+                recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
+                result = await self.proc_recvdoc(recvdoc)
+                print(f'Unter for result: {result}')
+                if result == False :
+                    return False
+            except KeyError:
+                print("REQ UUID 없는 RES")
+            except asyncio.TimeoutError:
+                print("TimeoutError in progress")
+                await asyncio.sleep(1)
+            return True
     async def process_message(self, recvdoc):
         """
         기본적으로 CSMS에서 요청하는 작업을 수행 함
@@ -798,24 +813,29 @@ class Charger() :
         """
         message = json.loads(recvdoc)
         send_recv_type, message_name = (REQUEST, message[2]) if len(message) == 4 else (RESPONSE, "")
-        print(f'start_process_message:{recvdoc}')
         for idx, c in enumerate(message_map[message_name]):
             doc = self.convertSendDoc(c)
-            print(f'Loop:{doc}')
-            print(f'cout : {idx} total size : {len(message_map[message_name])}')
             if c[0] == "MeterValues" :
-                if self.transactionId > 0 and self.charger_status == "Charging":
-                    v = self.meter + 999
-                    self.change_meter(v)
-                    if self.cid.endswith("C") :
-                        s = self.soc + 5
-                        self.change_soc(s)
-                    doc[3]["meterValue"][0]["sampledValue"][0]["value"] = str(v)
-                    await asyncio.sleep(10)
-                else:
-                    break
+                doc = self.convertSendDoc(c)
+                while ( self.req_watt - self.meter ) > 0 :
+                    if self.transactionId > 0 and self.charger_status == "Charging":
+                        v = self.meter + 999
+                        self.change_meter(v)
+                        if self.cid.endswith("C") :
+                            s = self.soc + 5
+                            self.change_soc(s)
+                        doc[3]["meterValue"][0]["sampledValue"][0]["value"] = str(v)
+                        await self.sendDocs(doc)
+                        result = await self.interim_recv()
+                        if not result:
+                            break
+                        await asyncio.sleep(10)
+                    else:
+                        break
+                self.change_meter(self.req_watt)
             elif c[0] == "StartTransaction":
                 doc[3]["meterStart"] = self.meter
+                self.start_meter = self.meter
                 """remote start로 시작한 경우 RemoteStartTrasaction의 chargingProfile에 있던 transactionId를 
                 ReservationId에 할당
                 """
@@ -826,7 +846,6 @@ class Charger() :
                 self.charger_status = doc[3]["status"]
 
             time.sleep(2)
-            print(f'doc:{doc}')
             await self.sendDocs(doc)
 
             try:

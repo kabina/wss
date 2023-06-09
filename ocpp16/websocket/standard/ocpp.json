@@ -434,7 +434,7 @@
     "DeleteCertificate": [
     2,
     "321312312",
-    "InstallCertificate",
+    "DeleteCertificate",
     {
       "certificateHashData": {
           "hashAlgorithm": "SHA256",

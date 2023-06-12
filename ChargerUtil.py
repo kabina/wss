@@ -152,7 +152,13 @@ message_map = {
                 ],
                 "RemoteStartTransaction":[
                     ["Authorize", {"idTag": "$idTag1"}, {"idTagInfo": {"status": "Accepted"}}],
-                    ["DataTransfer", {"messageId":"chargeValue", "idTag":"$idTag", "connectorId":1, "transactionId":"$transactionId", "timestamp":"$ctime"}],
+                    ["DataTransfer",
+                     {"vendorId":"EVAR", "messageId":"chargeValue","data":
+                         { "idTag":"$idTag",
+                            "connectorId":1, "transactionId":"$transactionId", "timestamp":"$ctime"
+                        }
+                    }
+                    ],
                     ["StartTransaction",{"reservationId":"$transactionId"}],
                     ["StatusNotification",{"status":"Charging"}],
                     ["MeterValues", {}],

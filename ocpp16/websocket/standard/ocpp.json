@@ -402,11 +402,8 @@
     2,
     "321312312",
     "DataTransfer",
-    {
-      "vendorId": "$vendor",
-      "messageId": "",
-      "data": {}
-    }
+    {"messageId":"chargeValue", "idTag":"$idTag", "connectorId":1, "transactionId":"$transactionId", "timestamp":"$ctime"},
+
   ],
     "DataTransferResponse": [
     3,

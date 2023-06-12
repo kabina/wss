@@ -361,8 +361,9 @@ class Charger() :
             doc[3]["messageId"]=ocpp[1]["messageId"]
             print(f'doc : {doc[3]}')
 
-            del ddoc["messageId"]
-            doc[3]["data"] = ddoc
+            #del ddoc["messageId"]
+            #doc[3]["data"] = ddoc
+            doc[3] = ddoc
             print(f'doc : {doc[3]}')
 
 
@@ -628,9 +629,9 @@ class Charger() :
                 self.en_tr.insert(0, jmsg[2]["transactionId"])
                 self.confV["$transactionId"] = self.transactionId
             elif orgmsg[2] == "StopTransaction":
-                self.transactionId = 0
-                self.transactionId = 0
-                self.confV["$transactionId"] = 0
+                # self.transactionId = 0
+                # self.transactionId = 0
+                # self.confV["$transactionId"] = 0
                 self.en_tr.delete(0, END)
                 self.en_tr.insert(0, "0")
             elif orgmsg[2] == "DataTransfer" and orgmsg[3]["messageId"]=="chargeValue":

@@ -635,7 +635,7 @@ class Charger() :
                 self.en_tr.delete(0, END)
                 self.en_tr.insert(0, "0")
             elif orgmsg[2] == "DataTransfer" and orgmsg[3]["messageId"]=="chargeValue":
-                self.req_watt = int(jmsg[2]["data"]["watt"])
+                self.req_watt = int(jmsg[2]["data"]["watt"]) + self.meter
             elif orgmsg[2] == "BootNotification":
                 self.interval = jmsg[2]["interval"]
                 self.charger_configuration["HeartbeatInterval"] = self.interval
@@ -818,7 +818,7 @@ class Charger() :
             doc = self.convertSendDoc(c)
             if c[0] == "MeterValues" :
                 doc = self.convertSendDoc(c)
-                while ( self.req_watt - self.meter ) > 0 :
+                while ( self.start_meter + self.req_watt - self.meter ) > 0 :
                     if self.transactionId > 0 and self.charger_status == "Charging":
                         v = self.meter + 999
                         self.change_meter(v)

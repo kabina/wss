@@ -1,0 +1,432 @@
+{
+  "BootNotification": [
+    2,
+    "$uuid",
+    "BootNotification",
+    {
+      "chargePointModel": "$crgr_mdl",
+      "chargePointVendor": "$vendor",
+      "chargePointSerialNumber": "$crgr_sno",
+      "firmwareVersion": "0.0.13",
+      "iccid": "1213123123",
+      "imsi": "3213123213"
+    }
+  ],
+  "StatusNotification": [
+    2,
+    "$uuid",
+    "StatusNotification",
+    {
+      "connectorId": "$connector",
+      "errorCode": "NoError",
+      "status": "Available",
+      "info": "NoError",
+      "timestamp": "$ctime",
+      "vendorId": "$vendor",
+      "vendorErrorCode": "NoError"
+    }
+  ],
+  "Heartbeat": [
+    2,
+    "19223201",
+    "Heartbeat",
+    {}
+  ],
+  "Authorize": [
+    2,
+    "$uuid",
+    "Authorize",
+    {
+      "idTag": "$idTag"
+    }
+  ],
+  "StartTransaction": [
+    2,
+    "167722361",
+    "StartTransaction",
+    {
+      "connectorId": 1,
+      "idTag": "$idTag",
+      "meterStart": "$meter",
+      "timestamp": "$ctime"
+    }
+  ],
+  "MeterValues": [
+    2,
+    "1677228049",
+    "MeterValues",
+    {
+      "connectorId": 1,
+      "transactionId": "$transactionId",
+      "meterValue": [
+        {
+          "timestamp": "$ctime",
+          "sampledValue": [
+            {
+              "value": "$meter",
+              "measurand": "Energy.Active.Import.Register",
+              "unit": "Wh"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "StopTransaction": [
+    2,
+    "1677228103",
+    "StopTransaction",
+    {
+      "meterStop": "$meter",
+      "timestamp": "$ctime",
+      "transactionId": "$transactionId",
+      "reason": "Finished"
+    }
+  ],
+  "ClearCache": [
+    2,
+    "123123123",
+    "ClearCache",
+    {}
+  ],
+  "ClearCacheResponse": [
+    3,
+    "2023-02-24T08:41:42.615Z",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "ResetResponse": [
+    3,
+    "2023-02-24T08:41:42.615Z",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "UnlockConnectorResponse": [
+    3,
+    "2023-02-24T08:41:42.615Z",
+    {
+      "status": "Unlocked"
+    }
+  ],
+  "GetConfigurationResponse": [
+    3,
+    "123214123123",
+    {
+      "configurationKey": [
+        {
+          "key": "heartbeatInterval",
+          "readonly": "true"
+        }
+      ]
+    }
+  ],
+  "RemoteStartTransaction": [
+    2,
+    "321312312",
+    "RemoteStartTransaction",
+    {
+      "idTag": "$idTag1"
+    }
+  ],
+  "RemoteStopTransaction": [
+    2,
+    "321312312",
+    "RemoteStopTransaction",
+    {
+      "transactionId": "$transactionId",
+      "idTag": "$idTag",
+      "chargingProfile": ""
+    }
+  ],
+  "RemoteStopTransactionResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "RemoteStartTransactionResponse": [
+    3,
+    "2023-02-24T08:41:42.615Z",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "Reset": [
+    2,
+    "321312312",
+    "Reset",
+    {
+      "type": "Hard"
+    }
+  ],
+  "UnlockConnector": [
+    2,
+    "321312312",
+    "UnlockConnector",
+    {
+      "connectorId": 1
+    }
+  ],
+  "GetConfiguration": [
+    2,
+    "321312312",
+    "GetConfiguration",
+    {
+      "key": [
+        ""
+      ]
+    }
+  ],
+  "GetLocalListVersion": [
+    2,
+    "321312312",
+    "GetLocalListVersion",
+    {}
+  ],
+  "GetLocalListVersionResponse": [
+    3,
+    "321312312",
+    {
+      "listVersion": -1
+    }
+  ],
+  "ChangeConfiguration": [
+    2,
+    "321312312",
+    "ChangeConfiguration",
+    {
+      "key": "UnknownConfigurationKey",
+      "value": "300"
+    }
+  ],
+  "ChangeConfigurationResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "ChangeAvailability": [
+    2,
+    "321312312",
+    "ChangeAvailability",
+    {
+      "type": "Operative"
+    }
+  ],
+  "ChangeAvailabilityResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "SendLocalList": [
+    2,
+    "321312312",
+    "SendLocalList",
+    {
+      "listVersion": 0,
+      "updateType": "Full"
+    }
+  ],
+  "SendLocalListResponse": [
+    3,
+    "321312312",
+    {
+      "status": ""
+    }
+  ],
+  "UpdateFirmware": [
+    2,
+    "321312312",
+    "UpdateFirmware",
+    {
+      "location": "https://s3~~~~",
+      "retrieveDate": "2023-04-15T10:15:00Z"
+    }
+  ],
+  "UpdateFirmwareResponse": [
+    3,
+    "321312312",
+    {}
+  ],
+  "FirmwareStatusNotification": [
+    2,
+    "321312312",
+    "FirmwareStatusNotification",
+    {
+      "status": "Downloading"
+    }
+  ],
+  "GetDiagnostics": [
+    2,
+    "321312312",
+    "GetDiagnostics",
+    {
+      "location": "s3://~~"
+    }
+  ],
+  "GetDiagnosticsResponse": [
+    3,
+    "321312312",
+    {
+      "filename": "filename_diagnostics"
+    }
+  ],
+  "DiagnosticsStatusNotification": [
+    2,
+    "321312312",
+    "DiagnosticsStatusNotification",
+    {
+      "status": "Idle"
+    }
+  ],
+  "DiagnosticsStatusNotificationResponse": [
+    3,
+    "321312312",
+    {
+      "type": "Idle"
+    }
+  ],
+  "ReserveNow": [
+    2,
+    "321312312",
+    "ReserveNow",
+    {
+      "connectorId": 1,
+      "expiryDate": "",
+      "idTag": "$idTag1",
+      "reservationId": "$reservationId"
+    }
+  ],
+  "ReserveNowResponse": [
+    3,
+    "321312312",
+    {
+      "status": ""
+    }
+  ],
+  "CancelReservation": [
+    2,
+    "321312312",
+    "CancelReservation",
+    {
+      "reservationId": "$reservationId"
+    }
+  ],
+  "CancelReservationResponse": [
+    3,
+    "321312312",
+    {
+      "status": ""
+    }
+  ],
+  "TriggerMessage": [
+    2,
+    "321312312",
+    "TriggerMessage",
+    {
+      "requestedMessage": "BootNotification"
+    }
+  ],
+  "TriggerMessageResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "SetChargingProfile": [
+    2,
+    "2323242423",
+    "SetChargingProfile",
+    {
+      "connectorId": 1,
+      "csChargingProfiles": {
+        "chargingProfileId": 100,
+        "stackLevel": 0,
+        "chargingProfilePurpose": "TxDefaultProfile",
+        "chargingProfileKind": "Absolute",
+        "chargingSchedule": {
+          "duration": 300,
+          "chargingRateUnit": "W",
+          "chargingSchedulePeriod": [
+            {
+              "startPeriod": 0,
+              "limit": 11000.0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "SetChargingProfileResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "GetCompositeSchedule": [
+    2,
+    "321312312",
+    "GetCompositeSchedule",
+    {
+      "connectorId": 1,
+      "duration": 300
+    }
+  ],
+  "GetCompositeScheduleResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted",
+      "chargingSchedule": {
+        "duration": 300,
+        "chargingRateUnit": "W",
+        "chargingSchedulePeriod": [
+          {
+            "startPeriod": 0,
+            "limit": 11000
+          }
+        ]
+      }
+    }
+  ],
+  "ClearChargingProfile": [
+    3,
+    "321312312",
+    "ClearChargingProfile",
+    {
+      "id": 100
+    }
+  ],
+  "ClearChargingProfileResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
+  ],
+  "DataTransfer": [
+    2,
+    "321312312",
+    "DataTransfer",
+    {
+      "vendorId": "$vendor",
+      "messageId": "",
+      "data": {}
+    }
+  ],
+    "DataTransferResponse": [
+    3,
+    "321312312",
+    {
+      "status": "Accepted"
+    }
+  ]
+}

@@ -9,12 +9,12 @@
         "ocpp16/websocket/HV",
         "ocpp20/websocket/other",
         "ocpp16/websocket/multi",
-        "ocpp16/websocket/GENIS"
-
+        "ocpp16/websocket/GENIS",
+        "ocpp16/websocket/u+(stg)"
   ],
   "urls": {
-    "rest": "https://rgw.devevspcharger.uplus.co.kr/ioc",
-    "wss": "wss://ws.devevspcharger.uplus.co.kr"
+    "rest": "https://rgw.stgevspcharger.uplus.co.kr/ioc",
+    "wss": "wss://ws.stgevspcharger.uplus.co.kr"
   },
   "properties": {
     "protocol": {
@@ -123,6 +123,21 @@
         "interval1": 3600,
         "interval2": 14400
       },
+      "ocpp16/websocket/other": {
+        "chrstn_nm": "(HV이관)LG헬로비전(테스트운영)",
+        "vendor": "EVAR",
+        "crgr_sno": "FFFFFFFFFFFF",
+        "crgr_rsno": "FFFFFFFFFFFF",
+        "crgr_cid": "114400999011A",
+        "crgr_rcid": "114400999011A",
+        "crgr_mdl": "JC-6511JA-P",
+        "auth_token": "Basic SkM6SkNMR1U=",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
+        "interval1": 3600,
+        "interval2": 14400
+      },
        "ocpp16/websocket/multi": {
         "chrstn_nm": "u+마곡사옥개발1번",
         "vendor": "EVAR",
@@ -150,6 +165,21 @@
         "idTag1": "1031040000069641",
         "idTag2": "1031040000069642",
         "connector": "3",
+        "interval1": 3600,
+        "interval2": 14400
+      },
+      "ocpp16/websocket/u+(stg)": {
+        "chrstn_nm": "U+마곡사옥검수3",
+        "vendor": "EVAR",
+        "crgr_sno": "ELA007C06001",
+        "crgr_rsno": "ELA007C06001",
+        "crgr_cid": "115001511011A",
+        "crgr_rcid": "115001511011A",
+        "crgr_mdl": "W-ELA007A01",
+        "auth_token": "Basic RVZBUjpFVkFSTEdV",
+        "idTag1": "1031040000069641",
+        "idTag2": "1031040000069642",
+        "connector": "1",
         "interval1": 3600,
         "interval2": 14400
       }

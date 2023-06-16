@@ -78,7 +78,8 @@ class ChargerSim(tk.Tk):
                         charger_name = None,
                         charger_status = None,
                         charger_meter = None,
-                        charger_soc = None
+                        charger_soc = None,
+                        charger_server = None
                         )
 
     def tcload_callback(self):
@@ -237,7 +238,8 @@ class ChargerSim(tk.Tk):
                 charger_name = self.chargers[idx]['text'],
                 charger_status = self.chargerstatuses[idx],
                 charger_meter = self.charger_meter[idx],
-                charger_soc = self.charger_soc[idx]
+                charger_soc = self.charger_soc[idx],
+                charger_server = charger_conf_details["server"]
             )
             print("BEFORE NEW CHARGER")
             charger = ChargerStandalone.Charger(config)
@@ -250,6 +252,17 @@ class ChargerSim(tk.Tk):
         else:
             charger.close()
 
+    async def tagCharger(self, idx):
+        await self.chargerlist[idx].cardtag()
+
+    async def conn_coupler(self, idx):
+        await self.chargerlist[idx].conn_coupler()
+
+    async def starttr(self, idx):
+        await self.chargerlist[idx].starttr()
+
+    async def stoptr(self, idx):
+        await self.chargerlist[idx].stoptr()
 
     def directClientSend(self):
         # if self.status == 0:
@@ -581,6 +594,7 @@ class ChargerSim(tk.Tk):
         self.lb_case = Label(self.frameTop, text="TC Body")
         self.lb_protocol = Label(self.frameHat, text="프로토콜")
         self.lb_sno = Label(self.frameHat, text="충전기ID(일반)")
+        self.lb_server = Label(self.frameHat, text="서버")
         self.lb_rsno = Label(self.frameHat, text="충전기ID(예약)")
         self.lb_mdl = Label(self.frameHat, text="모델ID")
         self.lb_cid = Label(self.frameHat, text="충전기CID(일반)", width=13)
@@ -622,34 +636,60 @@ class ChargerSim(tk.Tk):
             #self.chargerstatuses.append(cid)
 
         for idx, c in enumerate(protocol_keys):
-            mdl = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_mdl"]}', width=12, anchor="center", style='NLabel.TLabel')
+            mdl = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["server"]}', width=12, anchor="center", style='NLabel.TLabel')
             mdl.grid(row=2, column=idx, sticky="we")
             #self.chargerstatuses.append(mdl)
 
         for idx, c in enumerate(protocol_keys):
-            mdl = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_sno"]}', width=12, anchor="center", style='NLabel.TLabel')
+            mdl = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_mdl"]}', width=12, anchor="center", style='NLabel.TLabel')
             mdl.grid(row=3, column=idx, sticky="we")
             #self.chargerstatuses.append(mdl)
 
         for idx, c in enumerate(protocol_keys):
+            mdl = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_sno"]}', width=12, anchor="center", style='NLabel.TLabel')
+            mdl.grid(row=4, column=idx, sticky="we")
+            #self.chargerstatuses.append(mdl)
+
+        for idx, c in enumerate(protocol_keys):
             cid = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["crgr_cid"]}', width=12, anchor="center", style='NLabel.TLabel')
-            cid.grid(row=4, column=idx, sticky="we")
+            cid.grid(row=5, column=idx, sticky="we")
 
 
         for idx, c in enumerate(protocol_keys):
             stCharger = ttk.Label(self.frameBtChargers, text='Offline', width=12, anchor="center", style='BLabel.TLabel')
-            stCharger.grid(row=5, column=idx, sticky="we")
+            stCharger.grid(row=6, column=idx, sticky="we")
             self.chargerstatuses.append(stCharger)
 
         for idx, c in enumerate(protocol_keys):
             wh = ttk.Label(self.frameBtChargers, text=f"{0} Wh", width=12, anchor="center", style='GLabel.TLabel')
-            wh.grid(row=6, column=idx, sticky="we")
+            wh.grid(row=7, column=idx, sticky="we")
             self.charger_meter.append(wh)
 
         for idx, c in enumerate(protocol_keys):
             soc = ttk.Label(self.frameBtChargers, text=f"{0} %", width=12, anchor="center", style='GLabel.TLabel')
-            soc.grid(row=7, column=idx, sticky="we")
+            soc.grid(row=8, column=idx, sticky="we")
             self.charger_soc.append(soc)
+
+        for idx, c in enumerate(protocol_keys):
+            btname = '카드 태깅'
+            bttag = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.tagCharger, idx))
+            bttag.grid(row=9, column=idx, sticky="we")
+
+        for idx, c in enumerate(protocol_keys):
+            btname = '커플러 연결'
+            btcoupler = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.conn_coupler, idx))
+            btcoupler.grid(row=10, column=idx, sticky="we")
+
+        for idx, c in enumerate(protocol_keys):
+            btname = '충전시작'
+            btstarttr = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.starttr, idx))
+            btstarttr.grid(row=11, column=idx, sticky="we")
+
+        for idx, c in enumerate(protocol_keys):
+            btname = '충전종료'
+            btcoupler = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.stoptr, idx))
+            btcoupler.grid(row=12, column=idx, sticky="we")
+
 
         self.logtabs = ttk.Notebook(self.frameChargerLogs)
         self.logtabs.pack(fill=BOTH, expand=TRUE)
@@ -670,6 +710,7 @@ class ChargerSim(tk.Tk):
         self.en_protocol = OptionMenu(self.frameHat, self.testschem, *self.options)
         self.en_protocol.configure(width=20)
         self.testschem.trace("w", self.testschemChanged)
+        self.en_server = Entry(self.frameHat)
         self.en_sno = Entry(self.frameHat)
         self.en_rsno = Entry(self.frameHat)
         self.en_sno.insert(0, "EVSCA050001")
@@ -754,6 +795,7 @@ class ChargerSim(tk.Tk):
         self.bt_savetc.config(state='disabled')
 
         self.properties = {
+            "server": self.en_server,
             "crgr_sno": self.en_sno,
             "crgr_rsno": self.en_rsno,
             "crgr_cid": self.en_cid,
@@ -836,6 +878,8 @@ class ChargerSim(tk.Tk):
         self.en_chrstn_nm.grid(row=2, column=7, sticky="we")
         self.lb_soc.grid(row=2, column=8, sticky="we")
         self.en_soc.grid(row=2, column=9, sticky="we")
+        self.lb_server.grid(row=3, column=0, sticky="we")
+        self.en_server.grid(row=3, column=1, sticky="we")
         self.vtc_mode1.configure(command=self.show_txt_tc)
         self.vtc_mode2.configure(command=self.show_txt_tc_rendered)
         self.lb_url.grid(row=3, column=0, sticky="we")

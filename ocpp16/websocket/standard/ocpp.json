@@ -402,7 +402,7 @@
     2,
     "321312312",
     "DataTransfer",
-    {"messageId":"chargeValue", "idTag":"$idTag", "connectorId":1, "transactionId":"$transactionId", "timestamp":"$ctime"},
+    {"messageId":"chargeValue", "idTag":"$idTag", "connectorId":1, "transactionId":"$transactionId", "timestamp":"$ctime"}
 
   ],
     "DataTransferResponse": [

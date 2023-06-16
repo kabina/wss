@@ -49,6 +49,7 @@ logging.addLevelName(logging.INFO + 1, 'INFOV')
 
 REQUEST = 3
 RESPONSE = 2
+SERVER = "dev"
 TAGS = {REQUEST:"", RESPONSE:"Response"}
 # timestamp= datetime.utcnow().isoformat()
 
@@ -175,9 +176,9 @@ class Charger() :
 
     async def conn(self, case, type=None):
         if len(case.split('_')) > 1 and 46 <= int(case.split('_')[1]) <= 53 :
-            wss_url = f'{self.config.wss_url}/{self.mdl}/{self.config.rsno}'
+            wss_url = f'{self.config.wss_url.replace("$server", SERVER)}/{self.mdl}/{self.config.rsno}'
         else:
-            wss_url = f'{self.config.wss_url}/{self.mdl}/{self.config.sno}'
+            wss_url = f'{self.config.wss_url.replace("$server", SERVER)}/{self.mdl}/{self.config.sno}'
         try :
             # if type == "standalone":
             #     wss_url = "wss://192.168.0.152:8765"
@@ -299,13 +300,14 @@ class Charger() :
          1. 전문 템플릿 변환
          2. TC내 지정 전문 변환
          3. MessageID처리
-        :param ocpp:
+        :param ocpp: ["BootNotification, {}]  와 같은 형식
         :return:
         """
         self.confV["$meter"] = self.meter
         self.confV["$transactionId"] = self.transactionId
+
         doc = json.loads(self.ocppdocs)[ocpp[0]]
-        print(doc)
+
         print(self.cid)
         """ 고속 충전인 경우 Soc값 추가"""
         if self.cid.endswith("C") and doc[2] == "MeterValues":
@@ -413,7 +415,7 @@ class Charger() :
 
 
     async def callbackRequest(self, doc):
-        rest_url = self.config.rest_url
+        rest_url = self.config.rest_url.replace("$server",SERVER)
         import requests, uuid
         if "transactionId" in doc[3] :
             doc[3]["transactionId"] = self.transactionId
@@ -829,53 +831,53 @@ class Charger() :
         await asyncio.sleep(0.5)
         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
         await self.proc_recvdoc(recvdoc)
-
-    async def standalone(self, cases):
-        """
-        전문 처리, 선택된 TC셋을 받아 TC시나리오 내 개별 TC를 처리
-        :param cases: 전문 셋(TC별 전문)
-        :return: None
-        """
-        self.status = 0
-        print("IN STANDALONE")
-        cur_idx = self.lst_cases.curselection()
-        cur_idx = cur_idx[0] if cur_idx else 0
-        self.lst_cases.selection_clear(cur_idx+1,END)
-        import requests
-        start_time = time.time()
-
-        await self.charger_init()
-        while(True) :
-
-            try:
-                """CSMS로부터 Request요청 처리, 기본적으로 원격 또는 처리 시나리오 기준으로 동작
-                """
-                if self.ws.closed :
-                    await self.charger_init()
-                recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
-                if recvdoc == None or len(recvdoc) == 0:
-                    continue
-                jrecvdoc = json.loads(recvdoc)
-                await self.proc_recvdoc(recvdoc)
-                print(f'IN WHILE: {recvdoc}')
-
-                await asyncio.sleep(1)
-            except websockets.exceptions.ConnectionClosedOK:
-                print("Exception in Init")
-                await self.charger_init()
-            except asyncio.TimeoutError as te:
-                print("TimeoutError in standalone")
-                await asyncio.sleep(2)
-                """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
-                """
-                if (time.time() - self.start_time) > self.interval:
-                    senddoc = self.convertSendDoc(["Heartbeat", {}])
-                    recvdoc = await self.sendDocs(senddoc)
-                    self.start_time = time.time()
-            except Exception as e:
-                import traceback
-                print(traceback.print_exc())
-                await asyncio.sleep(1)
+    #
+    # async def standalone(self, cases):
+    #     """
+    #     전문 처리, 선택된 TC셋을 받아 TC시나리오 내 개별 TC를 처리
+    #     :param cases: 전문 셋(TC별 전문)
+    #     :return: None
+    #     """
+    #     self.status = 0
+    #     print("IN STANDALONE")
+    #     cur_idx = self.lst_cases.curselection()
+    #     cur_idx = cur_idx[0] if cur_idx else 0
+    #     self.lst_cases.selection_clear(cur_idx+1,END)
+    #     import requests
+    #     start_time = time.time()
+    #
+    #     await self.charger_init()
+    #     while(True) :
+    #
+    #         try:
+    #             """CSMS로부터 Request요청 처리, 기본적으로 원격 또는 처리 시나리오 기준으로 동작
+    #             """
+    #             if self.ws.closed :
+    #                 await self.charger_init()
+    #             recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
+    #             if recvdoc == None or len(recvdoc) == 0:
+    #                 continue
+    #             jrecvdoc = json.loads(recvdoc)
+    #             await self.proc_recvdoc(recvdoc)
+    #             print(f'IN WHILE: {recvdoc}')
+    #
+    #             await asyncio.sleep(1)
+    #         except websockets.exceptions.ConnectionClosedOK:
+    #             print("Exception in Init")
+    #             await self.charger_init()
+    #         except asyncio.TimeoutError as te:
+    #             print("TimeoutError in standalone")
+    #             await asyncio.sleep(2)
+    #             """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
+    #             """
+    #             if (time.time() - self.start_time) > self.interval:
+    #                 senddoc = self.convertSendDoc(["Heartbeat", {}])
+    #                 recvdoc = await self.sendDocs(senddoc)
+    #                 self.start_time = time.time()
+    #         except Exception as e:
+    #             import traceback
+    #             print(traceback.print_exc())
+    #             await asyncio.sleep(1)
 
 class TextHandler(logging.Handler):
     # This class allows you to log to a Tkinter Text or ScrolledText widget

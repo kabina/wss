@@ -3,6 +3,10 @@ from datetime import datetime
 from collections import OrderedDict
 import urllib3
 from jsonschema import validate, RefResolver
+from jsonschema import Draft7Validator
+from jsonschema.validators import RefResolver
+
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 class RequestMessages(OrderedDict):
     def __init__(self, max_size):
@@ -88,6 +92,77 @@ def tc_render(adict, k, value):
             tc_render(l, k, value)
     return adict
 
+
+
+def has_refs(schema):
+    if isinstance(schema, dict):
+        if "$ref" in schema:
+            return True
+        for value in schema.values():
+            if has_refs(value):
+                return True
+    elif isinstance(schema, list):
+        for item in schema:
+            if has_refs(item):
+                return True
+    return False
+
+
+def validate_json(data, schema):
+    # Load the JSON data
+    if isinstance(data, str):
+        with open(data) as file:
+            data = json.load(file)
+
+    # Load the main schema
+    if isinstance(schema, str):
+        with open(schema) as file:
+            schema = json.load(file)
+
+    # Check if the schema has $ref references
+    has_references = has_refs(schema)
+
+    if has_references:
+        # Define the resolver function
+        def resolver(uri):
+            components = uri.split('#')
+            file_path = components[0]  # File path without the fragment identifier
+            fragment = components[1] if len(components) > 1 else ""  # Fragment identifier
+
+            with open(file_path) as file:
+                resolved_data = json.load(file)
+
+                # Resolve the fragment within the resolved data
+                if fragment:
+                    path = fragment.split('/')
+                    for part in path:
+                        if part:
+                            resolved_data = resolved_data[part]
+
+                return resolved_data
+
+        # Create a resolver instance
+        resolver_instance = RefResolver.from_schema(schema, handlers={"": resolver})
+
+        # Validate the data against the schema
+        validator = Draft7Validator(schema, resolver=resolver_instance)
+    else:
+        # Validate the data against the schema directly
+        validator = Draft7Validator(schema)
+
+    errors = list(validator.iter_errors(data))
+
+    # Print validation errors, if any
+    if errors:
+        print("Validation errors:")
+        for error in errors:
+            print("- {}".format(error.message))
+            return False, error.message
+    else:
+        print("Data is valid!")
+        return True, None
+
+
 class Config():
     def __init__(self, **kwargs):
         self.wss_url = kwargs["wss_url"]
@@ -123,6 +198,7 @@ class Config():
         self.charger_status = kwargs['charger_status']
         self.charger_meter = kwargs['charger_meter']
         self.charger_soc = kwargs['charger_soc']
+        self.charger_server = kwargs['charger_server']
 
 diag_info = {
        "chargeBoxSerialNumber": "ABCD1234",
@@ -161,19 +237,11 @@ message_map = {
                     ],
                     ["StartTransaction",{"reservationId":"$transactionId"}],
                     ["StatusNotification",{"status":"Charging"}],
-                    ["MeterValues", {}],
-                    ["StopTransaction", {}],
-                    ["StatusNotification", {"status": "Finishing"}],
-                    ["StatusNotification", {"status": "Available"}]
+                    ["MeterValues", {}]
                 ],
                 "RemoteStopTransaction":[
                     ["StopTransaction",{}],
                     ["StatusNotification", {"status":"Finishing"}],
                     ["StatusNotification", {"status":"Available"}]
-                ],
-                # "StopTransaction": [
-                #     ["StopTransaction", {}],
-                #     ["StatusNotification", {"status": "Finishing"}],
-                #     ["StatusNotification", {"status": "Available"}]
-                # ]
+                ]
                 }

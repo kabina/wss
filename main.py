@@ -29,7 +29,10 @@ class ChargerSim(tk.Tk):
         self.initUI()
         self.startApp()
         self.cur_charger
-
+        # self.lst_bttag = []
+        # self.lst_btcoupler = []
+        # self.lst_btstarttr = []
+        # self.lst_btstoptr = []
 
 
 
@@ -252,8 +255,30 @@ class ChargerSim(tk.Tk):
         else:
             charger.close()
 
+    TAGGING = 0
+    COUPLER = 1
+    STARTTR = 2
+    STOPTR = 3
+
+    def change_bt_color(self, idx, type=TAGGING):
+
+        lst_bttag[idx].configure(background="gray")
+        lst_btstoptr[idx].configure(background="gray")
+        lst_btstarttr[idx].configure(background="gray")
+        lst_btstoptr[idx].configure(background="gray")
+
+        if type == TAGGING :
+            lst_bttag[idx].configure(background="blue")
+        elif type == COUPLER :
+            lst_btcoupler[idx].configure(background="blue")
+        elif type == STARTTR:
+            lst_btstarttr[idx].configure(background="blue")
+        else:
+            lst_btstoptr[idx].configure(background="blue")
+
     async def tagCharger(self, idx):
         await self.chargerlist[idx].cardtag()
+        self.change_bt_color(idx, type=TAGGING)
 
     async def conn_coupler(self, idx):
         await self.chargerlist[idx].conn_coupler()
@@ -629,6 +654,7 @@ class ChargerSim(tk.Tk):
         style.configure("NLabel.TLable", foreground="black", background="white", font=("TkDefaultFont", 12), padding=10)
         style.configure("BLabel.TLabel", foreground="blue")
         style.configure("GLabel.TLabel", foreground="green")
+        style.configure("TButton", background="gray")
 
         for idx, c in enumerate(protocol_keys):
             chrstn_nm = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["chrstn_nm"]}', width=12, anchor="center", style='NLabel.TLabel')
@@ -670,25 +696,33 @@ class ChargerSim(tk.Tk):
             soc.grid(row=8, column=idx, sticky="we")
             self.charger_soc.append(soc)
 
+        lst_bttag = []
         for idx, c in enumerate(protocol_keys):
             btname = '카드 태깅'
             bttag = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.tagCharger, idx))
             bttag.grid(row=9, column=idx, sticky="we")
+            lst_bttag.append(bttag)
+
 
         for idx, c in enumerate(protocol_keys):
             btname = '커플러 연결'
-            btcoupler = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.conn_coupler, idx))
-            btcoupler.grid(row=10, column=idx, sticky="we")
+            self.btcoupler = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.conn_coupler, idx))
+            self.btcoupler.grid(row=10, column=idx, sticky="we")
+            #self.lst_btcoupler.append(self.btcoupler)
+
 
         for idx, c in enumerate(protocol_keys):
             btname = '충전시작'
-            btstarttr = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.starttr, idx))
-            btstarttr.grid(row=11, column=idx, sticky="we")
+            self.btstarttr = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.starttr, idx))
+            self.btstarttr.grid(row=11, column=idx, sticky="we")
+            #self.lst_btstarttr.append(self.btstarttr)
+
 
         for idx, c in enumerate(protocol_keys):
             btname = '충전종료'
-            btcoupler = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.stoptr, idx))
-            btcoupler.grid(row=12, column=idx, sticky="we")
+            self.btchgend = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.stoptr, idx))
+            self.btchgend.grid(row=12, column=idx, sticky="we")
+            #self.lst_btstoptr.append(self.btchgend)
 
 
         self.logtabs = ttk.Notebook(self.frameChargerLogs)

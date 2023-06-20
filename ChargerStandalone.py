@@ -321,6 +321,7 @@ class Charger() :
         doc = self.convertSendDoc(["Authorize", {"idTag":"$idTag"}])
         await self.sendDocs(doc)
         print("AFTER AUTH")
+
     async def conn_coupler(self):
         doc = self.convertSendDoc(["StatusNotification", {"status":"preparing"}])
         await self.sendDocs(doc)

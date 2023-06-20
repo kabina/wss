@@ -10,6 +10,12 @@ from tkinter import ttk, messagebox
 import tkinter.filedialog as filedialog
 from datetime import datetime, timedelta
 from ChargerUtil import tc_render
+
+TAGGING = 0
+COUPLER = 1
+STARTTR = 2
+STOPTR = 3
+
 class ChargerSim(tk.Tk):
 
     def __init__(self, async_loop):
@@ -29,12 +35,6 @@ class ChargerSim(tk.Tk):
         self.initUI()
         self.startApp()
         self.cur_charger
-        # self.lst_bttag = []
-        # self.lst_btcoupler = []
-        # self.lst_btstarttr = []
-        # self.lst_btstoptr = []
-
-
 
     def config_update(self):
         self.interval1 = ((datetime.now() + timedelta(
@@ -94,7 +94,7 @@ class ChargerSim(tk.Tk):
                                                 ("txt files", "*.txt"))),encoding="UTF-8").read())
             self.init_result()
         except Exception as err:
-            self.en_log.insert(0, "Please Check your TC json file.")
+            self.en_log.insert(0, f"Please Check your TC json file.{err.with_traceback()}")
             return
 
         self.lst_cases.delete(0,END)
@@ -141,14 +141,7 @@ class ChargerSim(tk.Tk):
             tkinter.messagebox.showerror(title="오류", message="ocpp template 저장 중 오류 발생")
 
     async def startEvent(self):
-        # if self.status == 0:
-        #     messagebox.showwarning(title="소켓연결", message="소켓 연결 후 시작 하십시오")
-        #     #     messagebox.showwarning("소켓 연결 후 TC실행 해 주세요", "경고")
-        #     return
-        #
-        # self.status=0
         self.bt_conn['state'] = tk.NORMAL
-
         self.config_update()
         # TC_update()
         self.en_log.delete(0, END)
@@ -158,24 +151,16 @@ class ChargerSim(tk.Tk):
             for tc in self.TC_original.keys():
                 for t in self.TC_original[tc]:
                     self.lst_tc.insert(END, t)
-
         self.charger = Charger(self.config)
         await self.charger.runcase(self.TC_selected if len(self.TC_selected.keys())>0 else self.TC)
         self.en_status.delete(0, END)
         self.en_status.insert(0, "Test Finished")
         self.bt_conn['state'] = tk.DISABLED
-        #tkinter.messagebox.showinfo(title="완료", message="TC 수행을 완료했습니다.")
         self.txt_tc.delete("0.0", END)
         self.curProgress.set(0)
         self.progressbar.update()
 
     async def standalone(self, idx):
-        # if self.status == 0:
-        #     messagebox.showwarning(title="소켓연결", message="소켓 연결 후 시작 하십시오")
-        #     #     messagebox.showwarning("소켓 연결 후 TC실행 해 주세요", "경고")
-        #     return
-        #
-        # self.status=0
         charger = None
         print(self.chargerlist)
         self.logtabs.select(idx)
@@ -184,7 +169,6 @@ class ChargerSim(tk.Tk):
                 await self.chargerlist[idx].charger_init()
             else:
                 return
-        print("AFTER RESTART")
         if self.bt_standalone['state'] == tk.NORMAL :
             self.bt_conn['state'] = tk.NORMAL
             charger_confs = self.conf["properties"]["protocol"]
@@ -192,7 +176,6 @@ class ChargerSim(tk.Tk):
             self.testschem.set(chargerlist[idx])
 
             self.config_update()
-            # TC_update()
             self.en_log.delete(0, END)
             self.en_status.delete(0, END)
             self.en_status.insert(0, "Running")
@@ -206,8 +189,6 @@ class ChargerSim(tk.Tk):
             for charger in charger_confs.keys():
                 if self.chargers[idx]['text'] in charger :
                     charger_conf_details = charger_confs[charger]
-            print(charger_conf_details)
-            print(idx, self.chargers[idx]['text'])
             config = Config(
                 wss_url=self.en_url.get(),
                 rest_url=self.en_rest_url.get(),
@@ -244,9 +225,7 @@ class ChargerSim(tk.Tk):
                 charger_soc = self.charger_soc[idx],
                 charger_server = charger_conf_details["server"]
             )
-            print("BEFORE NEW CHARGER")
             charger = ChargerStandalone.Charger(config)
-            print("AFTER NEW CHARGER")
             self.cur_charger = idx
             self.chargerlist[idx] = charger
 
@@ -255,47 +234,36 @@ class ChargerSim(tk.Tk):
         else:
             charger.close()
 
-    TAGGING = 0
-    COUPLER = 1
-    STARTTR = 2
-    STOPTR = 3
-
     def change_bt_color(self, idx, type=TAGGING):
+        bdic = {
+            TAGGING:self.lst_bttag[idx],
+            COUPLER:self.lst_btcoupler[idx],
+            STARTTR:self.lst_btstarttr[idx],
+            STOPTR:self.lst_btstoptr[idx]
+        }
+        for i in range(4):
+            if i == type:
+                bdic[i].configure(style="Clicked.TButton")
+            else:
+                bdic[i].configure(style="TButton")
 
-        lst_bttag[idx].configure(background="gray")
-        lst_btstoptr[idx].configure(background="gray")
-        lst_btstarttr[idx].configure(background="gray")
-        lst_btstoptr[idx].configure(background="gray")
-
-        if type == TAGGING :
-            lst_bttag[idx].configure(background="blue")
-        elif type == COUPLER :
-            lst_btcoupler[idx].configure(background="blue")
-        elif type == STARTTR:
-            lst_btstarttr[idx].configure(background="blue")
-        else:
-            lst_btstoptr[idx].configure(background="blue")
-
-    async def tagCharger(self, idx):
+    async def tagCharger(self, idx, type=TAGGING):
         await self.chargerlist[idx].cardtag()
-        self.change_bt_color(idx, type=TAGGING)
+        self.change_bt_color(idx, type=type)
 
-    async def conn_coupler(self, idx):
+    async def conn_coupler(self, idx, type=COUPLER):
         await self.chargerlist[idx].conn_coupler()
+        self.change_bt_color(idx, type=type)
 
-    async def starttr(self, idx):
+    async def starttr(self, idx, type=STARTTR):
         await self.chargerlist[idx].starttr()
+        self.change_bt_color(idx, type=type)
 
-    async def stoptr(self, idx):
+    async def stoptr(self, idx, type=STOPTR):
         await self.chargerlist[idx].stoptr()
+        self.change_bt_color(idx, type=type)
 
     def directClientSend(self):
-        # if self.status == 0:
-        #     messagebox.showwarning(title="소켓연결", message="소켓 연결 후 시작 하십시오")
-        #     #     messagebox.showwarning("소켓 연결 후 TC실행 해 주세요", "경고")
-        #     return
-        #
-        # self.status=0
         import copy
         self.bt_conn['state'] = tk.NORMAL
         self.config_update()
@@ -343,8 +311,6 @@ class ChargerSim(tk.Tk):
 
     def wssRenew(self):
         self.lb_url_comp.config(text=self.en_url.get()+'/'+self.testschem.get().split('/')[0]+'/'+self.en_mdl.get()+'/'+self.en_sno.get())
-        # self.en_url.insert(0,self.en_url.get()+'/'+self.testschem.get().split('/')[0])
-        # self.en_rest_url.insert(0, 'https://8b434254zg.execute-api.ap-northeast-2.amazonaws.com/dev/ioc')
 
     def onSelect(self, event):
         w = event.widget
@@ -371,11 +337,7 @@ class ChargerSim(tk.Tk):
         if not items :
             return
         text_item = {}
-        # org_ocppdocs_converted = copy.deepcopy(self.org_ocppdocs)
 
-        # for k in self.ConfV.keys():
-        #     if self.ConfV[k] :
-        #         org_ocppdocs_converted = org_ocppdocs_converted.replace(k, self.ConfV[k])
         for item in items :
             if item[0]  in ('Wait', 'Reply') :
                 text_item[item[1]]=json.loads(self.org_ocppdocs)[item[1]]
@@ -523,7 +485,6 @@ class ChargerSim(tk.Tk):
             messagebox.showerror(title="구성파일", message="구성파일(config.json) 오류, 파일 존재 및 내용을 확인 하세요")
             self.window.destroy()
 
-
     def txt_tc_changed(self, event):
         self.vtxt_tc_changed.set(1)
 
@@ -642,6 +603,11 @@ class ChargerSim(tk.Tk):
         self.chargerstatuses = []
         self.charger_meter = []
         self.charger_soc = []
+        self.lst_bttag = []
+        self.lst_btcoupler = []
+        self.lst_btstarttr = []
+        self.lst_btstoptr = []
+
         protocols = self.conf["properties"]["protocol"]
         protocol_keys = list(self.conf["properties"]["protocol"].keys())
         for idx, c in enumerate(protocol_keys):
@@ -654,7 +620,8 @@ class ChargerSim(tk.Tk):
         style.configure("NLabel.TLable", foreground="black", background="white", font=("TkDefaultFont", 12), padding=10)
         style.configure("BLabel.TLabel", foreground="blue")
         style.configure("GLabel.TLabel", foreground="green")
-        style.configure("TButton", background="gray")
+        style.configure("TButton", background="SystemButtonFace")
+        style.configure("Clicked.TButton", background="green")
 
         for idx, c in enumerate(protocol_keys):
             chrstn_nm = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["chrstn_nm"]}', width=12, anchor="center", style='NLabel.TLabel')
@@ -699,30 +666,30 @@ class ChargerSim(tk.Tk):
         lst_bttag = []
         for idx, c in enumerate(protocol_keys):
             btname = '카드 태깅'
-            bttag = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.tagCharger, idx))
+            bttag = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.tagCharger, idx), style="TButton")
             bttag.grid(row=9, column=idx, sticky="we")
-            lst_bttag.append(bttag)
+            self.lst_bttag.append(bttag)
 
 
         for idx, c in enumerate(protocol_keys):
-            btname = '커플러 연결'
-            self.btcoupler = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.conn_coupler, idx))
-            self.btcoupler.grid(row=10, column=idx, sticky="we")
-            #self.lst_btcoupler.append(self.btcoupler)
+            btcouplernm = '커플러 연결'
+            btcoupler = ttk.Button(self.frameBtChargers, text=btcouplernm, width=12, command=async_handler(self.conn_coupler, idx), style="TButton")
+            btcoupler.grid(row=10, column=idx, sticky="we")
+            self.lst_btcoupler.append(btcoupler)
 
 
         for idx, c in enumerate(protocol_keys):
-            btname = '충전시작'
-            self.btstarttr = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.starttr, idx))
-            self.btstarttr.grid(row=11, column=idx, sticky="we")
-            #self.lst_btstarttr.append(self.btstarttr)
+            btstarttrnm = '충전시작'
+            btstarttr = ttk.Button(self.frameBtChargers, text=btstarttrnm, width=12, command=async_handler(self.starttr, idx), style="TButton")
+            btstarttr.grid(row=11, column=idx, sticky="we")
+            self.lst_btstarttr.append(btstarttr)
 
 
         for idx, c in enumerate(protocol_keys):
-            btname = '충전종료'
-            self.btchgend = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.stoptr, idx))
-            self.btchgend.grid(row=12, column=idx, sticky="we")
-            #self.lst_btstoptr.append(self.btchgend)
+            btchgendnm= '충전종료'
+            btchgend = ttk.Button(self.frameBtChargers, text=btchgendnm, width=12, command=async_handler(self.stoptr, idx), style="TButton")
+            btchgend.grid(row=12, column=idx, sticky="we")
+            self.lst_btstoptr.append(btchgend)
 
 
         self.logtabs = ttk.Notebook(self.frameChargerLogs)
@@ -1009,7 +976,6 @@ class ChargerSim(tk.Tk):
 
         self.load_default_tc()
         self.config_update()
-
 
         async_mainloop(self.window)
 

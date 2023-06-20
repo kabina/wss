@@ -131,37 +131,6 @@ class Charger() :
     def stop(self):
         self.status = -1
 
-    # def update_config(self, config):
-    #     self.config = config
-    #     self.en_tr = config.en_tr
-    #     self.en_tc = config.en_tc
-    #     self.lst_cases = config.lst_cases
-    #     self.en_status = config.en_status
-    #     self.txt_recv = config.txt_recv
-    #     self.cid = config.cid
-    #     self.rcid = config.rcid
-    #     self.mdl = config.mdl
-    #     self.confV = config.confV
-    #     self.en_reserve = config.en_reserve
-    #     self.lst_tc = config.lst_tc
-    #     self.test_mode = config.test_mode
-    #     self.ocppdocs = config.ocppdocs
-    #     self.txt_tc = config.txt_tc
-    #     self.progressbar = config.progressbar
-    #     self.curProgress = config.curProgress
-    #     self.bt_direct_send = config.bt_direct_send
-    #     self.lb_mode_alert = config.lb_mode_alert
-    #     self.testschem = config.testschem
-    #     self.ciphersuite = config.ciphersuite
-    #     self.interval = 600
-    #     self.en_meter = config.en_meter
-    #     self.en_vendor = config.en_vendor
-    #     self.en_soc = config.en_soc
-    #     self.charger_name = self.chargers[idx]['text'],
-    #     self.charger_status = self.chargerstatuses[idx]
-    #     self.charger_meter = self.charger_meter[idx]
-    #     self.charger_soc = self.charger_soc[idx]
-
     def change_list(self, case, text, attr=None, log=None):
         try:
             idx = self.lst_cases.get(0, "end").index(case.split()[0])
@@ -420,37 +389,6 @@ class Charger() :
             self.change_status(doc[3]["status"])
         return doc
 
-        #
-        # recv= await self.ws.recv()
-        # if recv :
-        #     print(recv)
-        #     jrecv = json.loads(recv)
-        #     if len(jrecv)  == 4 :
-        #         self.req_message_history[jrecv[1]] = jrecv
-        #         self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
-        #         if jrecv[2] in message_map:
-        #             await self.process_message(recv)
-        #     else:
-        #         self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
-        #         if(doc[1] != jrecv[1]):
-        #             await self.proc_reply(recv)
-        #
-        #     # 후처리
-        #     if doc[2]=="StartTransaction" and jrecv[0] == 3 and "transactionId" in jrecv[2]:
-        #         self.transactionId = jrecv[2]["transactionId"]
-        #         self.confV["$transactionId"] = jrecv[2]["transactionId"]
-        #         self.en_tr.delete(0,END)
-        #         self.en_tr.insert(0,jrecv[2]["transactionId"])
-        #         self.confV["$transactionId"] = self.transactionId
-        #     elif doc[2]=="StopTransaction":
-        #         self.transactionId = 0
-        #     elif doc[2]=="BootNotification" :
-        #         self.interval = jrecv[2]["interval"]
-        #         self.charger_configuration["HeartbeatInterval"] = self.interval
-        #     elif doc[2]=="StatusNotification" :
-        #         self.charger_status = doc[3]["status"]
-        #     return jrecv
-
     async def proc_message(self, recvdoc):
         jrecvdoc = json.loads(recvdoc)
         if len(jrecvdoc) == 4 :
@@ -500,132 +438,6 @@ class Charger() :
             elif t in recv.keys() and target[t] != recv[t]:
                 return (False, target)
         return (True, None)
-    #
-    # async def runcase(self, cases):
-    #     """
-    #     전문 처리, 선택된 TC셋을 받아 TC시나리오 내 개별 TC를 처리
-    #     :param cases: 전문 셋(TC별 전문)
-    #     :return: None
-    #     """
-    #     scases = []
-    #     step_count = 0
-    #
-    #     self.status = 0
-    #
-    #     case_cnt = sum([len(cases[c]) for c in cases.keys()])
-    #     cur_idx = self.lst_cases.curselection()
-    #     cur_idx = cur_idx[0] if cur_idx else 0
-    #     self.lst_cases.selection_clear(cur_idx+1,END)
-    #
-    #     for idx, case in enumerate(cases.keys()):
-    #         inner_step_count = 0
-    #         await self.conn(case)
-    #         if self.status == -1 :
-    #             break
-    #         self.log("+===========================================================", attr='green')
-    #         self.log(f"Testing... [{case}]", attr='green')
-    #         self.log("+===========================================================", attr='green')
-    #         change_text(self.en_tc, case)
-    #         self.lst_cases.see(cur_idx+idx)
-    #         if 0 != (cur_idx+idx):
-    #             self.lst_cases.selection_clear(0, cur_idx+idx)
-    #         self.lst_cases.select_set(cur_idx+idx)
-    #
-    #         ilen = len(cases[case])
-    #         elapsed_time_most = 0
-    #         for idx2, c in enumerate(cases[case]):
-    #
-    #             """일반TC에서는 전문 Client직접접속 버튼 해제"""
-    #             self.bt_direct_send['state'] = tk.DISABLED
-    #             self.lb_mode_alert['text'] =""
-    #
-    #             inner_step_count += 1
-    #             self.lst_tc.selection_clear(0, 'end')
-    #             self.lst_tc.select_set(step_count)
-    #             self.lst_tc.itemconfig(step_count, {'fg': 'green'})
-    #             step_count += 1
-    #             """ Progress bar Update"""
-    #             self.curProgress.set(step_count / case_cnt*100)
-    #             self.progressbar.update()
-    #             self.lst_tc.see(step_count)
-    #             self.txt_recv.see(END)
-    #             start_time = timeit.default_timer()
-    #             if c[0] == "Wait" :
-    #                 self.log(f" Waiting message from CSMS [{c[1]}] ...", attr='green')
-    #
-    #                 if self.test_mode == 1:
-    #                     doc = json.loads(self.ocppdocs)[c[1]]
-    #                     if len(c) > 2:
-    #                         for d in c[2].keys():
-    #                             doc[3][d] = c[2][d]
-    #
-    #                     await self.callbackRequest( doc)
-    #
-    #             elif c[0] == "Reply":
-    #                 recv = await self.waitMessages()
-    #                 if recv == None :
-    #                     scases.append(case)
-    #                     result = " None response from server. test case failed"
-    #                     self.change_list(case, f"{case} (Fail)", attr={'fg': 'red'}, log=result)
-    #
-    #                     break
-    #                 schema_check = checkSchema(c[1], recv[3], self.testschem)
-    #                 if not schema_check[0]:
-    #                     result = f" Fail ( Invalid testcase message from server, expected ({schema_check[1]})"
-    #                     scases.append(case)
-    #                     self.change_list(case, f"{case} (Fail)", attr={'fg':'red'}, log=result)
-    #                     break
-    #                 else:
-    #                     senddoc = json.loads(self.ocppdocs)[f"{recv[2]}Response"]
-    #                     senddoc[1] = recv[1]
-    #                     if len(c)>2 :
-    #                         for d in c[2].keys() :
-    #                             senddoc[2][d]=c[2][d]
-    #                     await self.sendReply(senddoc)
-    #             else :
-    #                 doc = self.convertSendDoc(c)
-    #
-    #                 self.txt_tc.delete(1.0, END)
-    #                 self.txt_tc.insert(END, json.dumps(doc, indent=2))
-    #
-    #                 schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
-    #                 if not schema_check[0] :
-    #                     result = f" Fail ( Invalid testcase sending message from server. {schema_check[1]} )"
-    #                     scases.append(case)
-    #                     self.change_list(case, f"{case} (Fail)", attr={'fg':'red'}, log=result)
-    #                     break
-    #                 recv = await self.sendDocs(doc)
-    #                 schema_check = checkSchema(f"{c[0]}", doc[3], self.testschem) if c[0]!="DataTransfer" else (True, "DataTransfer는 스키마 체크 하지 않음")
-    #                 if not schema_check[0]:
-    #                     result = f" Fail ( Invalid testcase recv message from server. {schema_check[1]} )"
-    #                     scases.append(case)
-    #                     self.change_list(case, f"{case} (Fail)", attr={'fg':'red'}, log=result)
-    #                     break
-    #                 if len(c)>2 and recv[0]==3:
-    #                     chk = self.recv_check(recv[2], c[2])
-    #                     if not chk[0]:
-    #                         result = f" Fail ( Not expected response from server(expected: {chk[1]}. ))"
-    #                         scases.append(case)
-    #                         self.change_list(case, f"{case} (Fail)", attr={'fg': 'red'}, log=result)
-    #                         break
-    #             elapsed_time = timeit.default_timer() - start_time
-    #             if elapsed_time > elapsed_time_most :
-    #                 elapsed_time_most = elapsed_time
-    #
-    #             if idx2 == (ilen-1) :
-    #                 self.change_list(case, f"{case} (Pass, {elapsed_time_most})", attr={'fg':'blue'}, log="Passed")
-    #         step_count += (ilen-inner_step_count)
-    #         """ Progress bar Update(TC별 오류로 미처리된 STEP처리"""
-    #         self.curProgress.set(step_count / case_cnt * 100)
-    #         self.progressbar.update()
-    #         self.lst_tc.see(step_count)
-    #
-    #         await self.close()
-    #
-    #     self.log(f" Total {len(cases)} cases tested and {len(cases)-len(scases)} cases succeed. Failed cases are as follows", attr='green')
-    #     self.log(" ==========================================================================", attr='green')
-    #     for c in scases:
-    #         self.log(f" {c}", attr='green')
 
     async def proc_reply(self, msg):
         """
@@ -650,9 +462,6 @@ class Charger() :
                 self.en_tr.insert(0, jmsg[2]["transactionId"])
                 self.confV["$transactionId"] = self.transactionId
             elif orgmsg[2] == "StopTransaction":
-                # self.transactionId = 0
-                # self.transactionId = 0
-                # self.confV["$transactionId"] = 0
                 self.en_tr.delete(0, END)
                 self.en_tr.insert(0, "0")
             elif orgmsg[2] == "DataTransfer" and orgmsg[3]["messageId"]=="chargeValue":
@@ -664,10 +473,6 @@ class Charger() :
                 if jmsg[1] in self.req_message_history and jmsg[1] and \
                             jmsg[2]["idTagInfo"]["status"] != "Accepted":
                     self.log(f'Authorize Error: {jmsg[2]["idTagInfo"]["status"]}', attr="red")
-                    # if self.transactionId > 0 :
-                    #     senddoc = self.convertSendDoc(['StopTransaction', {"transactionId":self.transactionId, "reason":"DeAuthroized"}])
-                    #     print(f'TX ERR senddoc:{senddoc}')
-                    #     await self.sendDocs(senddoc)
         # [2, ~ ] 로시작하는 메시지들에 대해 [3, ~ ]의 응답 메시지 생성 및 송신
         else :
             #self.log(f' << {jmsg[2]}:{msg}', attr='blue')
@@ -678,15 +483,6 @@ class Charger() :
                 self.confV["$transactionId"] = self.transactionId
                 self.en_tr.delete(0,END)
                 self.en_tr.insert(0, self.transactionId)
-
-            # elif inprog_name == "RemoteStopTransaction" and self.charger_status in ("Charging", "Preparing") :
-            #     if "chargingProfileId" in jmsg[3] :
-            #         self.transactionId = jmsg[2]["transactionId"]
-            #         self.en_tr.delete(0, END)
-            #         self.en_tr.insert(0, jmsg[3]["transactionId"])
-            #         self.confV["$transactionId"] = self.transactionId
-            #     else:
-            #         self.en_tr.delete(0,END)
             elif inprog_name == "GetDiagnostics":
                 senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
             elif inprog_name in ("GetConfiguration", "SetConfiguration"):
@@ -700,11 +496,7 @@ class Charger() :
                         send_conf_keys["readonly"] = "false"
                         key_list.append(send_conf_keys)
                     senddoc[3]["ConfigurationKey"] = key_list
-
             await self.sendReply(senddoc)
-
-            # if jmsg[2] in message_map:
-            #     await self.process_message(msg)
         return True
 
     def get_diag_info(self):
@@ -734,9 +526,6 @@ class Charger() :
 
             self.log(f' << {self.req_message_history[message[1]][2] if len(message)==3 else message[2]}:{recvdoc}', attr='blue')
 
-            if message[0]==2:
-                self.req_message_history[message[1]] = message
-
             result = await self.proc_reply(recvdoc)
             # 진행 중 문제가 있는 경우 트랜잭션 중지
             if not result:
@@ -745,6 +534,7 @@ class Charger() :
 
             if message[0] == 3:
                 return True
+            self.req_message_history[message[1]] = message
             schema = f"./{self.testschem}/schemas/{message[2]}.json"
             valid_schema = validate_json(message[3], schema)
             if not valid_schema :
@@ -804,6 +594,7 @@ class Charger() :
                 if message[3]["idTag"] :
                     self.confV["$idTag"] = message[3]["idTag"]
                     self.confV["$idTag1"] = message[3]["idTag"]
+
             if message_name and message_name in message_map:
                 return await self.process_message(recvdoc)
 
@@ -811,21 +602,6 @@ class Charger() :
             # if len(message) == 3:
             #     self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
             return True
-
-    # async def interim_recv(self):
-    #         try:
-    #             """Message Map 수행 중 수신되는 메시지 처리"""
-    #             recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
-    #             result = await self.proc_recvdoc(recvdoc)
-    #             print(f'Unter for result: {result}')
-    #             if result == False :
-    #                 return False
-    #         except KeyError:
-    #             print("REQ UUID 없는 RES")
-    #         except asyncio.TimeoutError:
-    #             print("TimeoutError in progress")
-    #             await asyncio.sleep(1)
-    #         return True
 
     async def interim_recv(self):
         try:
@@ -916,7 +692,6 @@ class Charger() :
                 """Message Map 수행 중 수신되는 메시지 처리"""
                 recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
                 result = await self.proc_recvdoc(recvdoc)
-                print(f'Unter for result: {result}')
                 if result == False :
                     break
             except KeyError:
@@ -987,23 +762,15 @@ class Charger() :
                 """
                 if self.ws.closed :
                     await self.charger_init()
-                # websocket_task = asyncio.ensure_future(self.websocket_handler(queue))
-                # keyboard_task = asyncio.ensure_future(self.keyboard_input_handler(queue))
-                # await asyncio.gather(websocket_task, keyboard_task)
-                # print(f"queue:{queue}")
                 recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
                 if recvdoc == None or len(recvdoc) == 0:
                     continue
                 jrecvdoc = json.loads(recvdoc)
                 await self.proc_recvdoc(recvdoc)
-                print(f'IN WHILE: {recvdoc}')
-
                 await asyncio.sleep(1)
             except websockets.exceptions.ConnectionClosedOK:
-                print("Exception in Init")
                 await self.charger_init()
             except asyncio.TimeoutError as te:
-                print("## 메시지 수신 대기 중 ##")
                 await asyncio.sleep(2)
                 """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
                 """

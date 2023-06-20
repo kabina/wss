@@ -592,7 +592,6 @@ class Charger() :
             # self.log(f' << {inprog_name}:{msg}', attr='blue')
             # Server Response 후처리 주로 charger 내부변수 및 UI 값 변경
             orgmsg = self.req_message_history[jmsg[1]]
-            print(orgmsg)
             if orgmsg[2] == "StartTransaction" and jmsg[0] == 3 and "transactionId" in jmsg[2]:
                 self.transactionId = jmsg[2]["transactionId"]
                 self.confV["$transactionId"] = jmsg[2]["transactionId"]
@@ -612,10 +611,7 @@ class Charger() :
                 if jmsg[1] in self.req_message_history and jmsg[1] and \
                             jmsg[2]["idTagInfo"]["status"] != "Accepted":
                     self.log(f'Authorize Error: {jmsg[2]["idTagInfo"]["status"]}', attr="red")
-                    # if self.transactionId > 0 :
-                    #     senddoc = self.convertSendDoc(['StopTransaction', {"transactionId":self.transactionId, "reason":"DeAuthroized"}])
-                    #     print(f'TX ERR senddoc:{senddoc}')
-                    #     await self.sendDocs(senddoc)
+
         # [2, ~ ] 로시작하는 메시지들에 대해 [3, ~ ]의 응답 메시지 생성 및 송신
         else :
             #self.log(f' << {jmsg[2]}:{msg}', attr='blue')
@@ -628,14 +624,6 @@ class Charger() :
                 self.en_tr.delete(0,END)
                 self.en_tr.insert(0, self.transactionId)
 
-            # elif inprog_name == "RemoteStopTransaction" and self.charger_status in ("Charging", "Preparing") :
-            #     if "chargingProfileId" in jmsg[3] :
-            #         self.transactionId = jmsg[2]["transactionId"]
-            #         self.en_tr.delete(0, END)
-            #         self.en_tr.insert(0, jmsg[3]["transactionId"])
-            #         self.confV["$transactionId"] = self.transactionId
-            #     else:
-            #         self.en_tr.delete(0,END)
             elif inprog_name == "GetDiagnostics":
                 senddoc[2]["filename"] = jmsg[3]["location"].split('?')[0].split('/')[-1] # location에서 filename만 가져옴
             elif inprog_name in ("GetConfiguration", "SetConfiguration"):
@@ -665,8 +653,6 @@ class Charger() :
         diag_info["vendorErrorCode"] = "ERR - 001"
         return diag_info
 
-
-
     async def proc_recvdoc(self, recvdoc):
         """
         서버로 부터의 메시지 처리/원격 요청 처리 및 Response 처리
@@ -682,9 +668,6 @@ class Charger() :
 
             self.log(f' << {self.req_message_history[message[1]][2] if len(message)==3 else message[2]}:{recvdoc}', attr='blue')
 
-            if message[0]==2:
-                self.req_message_history[message[1]] = message
-
             result = await self.proc_reply(recvdoc)
             # 진행 중 문제가 있는 경우 트랜잭션 중지
             if not result:
@@ -694,6 +677,7 @@ class Charger() :
             if message[0] == 3:
                 return True
 
+            self.req_message_history[message[1]] = message
             message_name = message[2]
             # 메시지가 송신에 대한 응답인 경우
             print(f'proc_recvdoc:{recvdoc}')
@@ -711,8 +695,6 @@ class Charger() :
                 else :
                     if (message[2]["status"] == "Reserved"):
                         self.reserved = True
-
-
             elif message_name == "GetDiagnostics":
                 location = message[3]["location"]
                 diaginfo = self.get_diag_info()
@@ -751,11 +733,7 @@ class Charger() :
             if message_name and message_name in message_map:
                 return await self.process_message(recvdoc)
 
-
-            # if len(message) == 3:
-            #     self.log(f' << {self.req_message_history[jrecv[1]][2]}:{recv}', attr='blue')
             return True
-
 
     async def process_message(self, recvdoc):
         """
@@ -831,53 +809,7 @@ class Charger() :
         await asyncio.sleep(0.5)
         recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
         await self.proc_recvdoc(recvdoc)
-    #
-    # async def standalone(self, cases):
-    #     """
-    #     전문 처리, 선택된 TC셋을 받아 TC시나리오 내 개별 TC를 처리
-    #     :param cases: 전문 셋(TC별 전문)
-    #     :return: None
-    #     """
-    #     self.status = 0
-    #     print("IN STANDALONE")
-    #     cur_idx = self.lst_cases.curselection()
-    #     cur_idx = cur_idx[0] if cur_idx else 0
-    #     self.lst_cases.selection_clear(cur_idx+1,END)
-    #     import requests
-    #     start_time = time.time()
-    #
-    #     await self.charger_init()
-    #     while(True) :
-    #
-    #         try:
-    #             """CSMS로부터 Request요청 처리, 기본적으로 원격 또는 처리 시나리오 기준으로 동작
-    #             """
-    #             if self.ws.closed :
-    #                 await self.charger_init()
-    #             recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=1.0)
-    #             if recvdoc == None or len(recvdoc) == 0:
-    #                 continue
-    #             jrecvdoc = json.loads(recvdoc)
-    #             await self.proc_recvdoc(recvdoc)
-    #             print(f'IN WHILE: {recvdoc}')
-    #
-    #             await asyncio.sleep(1)
-    #         except websockets.exceptions.ConnectionClosedOK:
-    #             print("Exception in Init")
-    #             await self.charger_init()
-    #         except asyncio.TimeoutError as te:
-    #             print("TimeoutError in standalone")
-    #             await asyncio.sleep(2)
-    #             """Interval동안 아무런 메시지가 수신되지 않았을 경우 Heartbeat 송신
-    #             """
-    #             if (time.time() - self.start_time) > self.interval:
-    #                 senddoc = self.convertSendDoc(["Heartbeat", {}])
-    #                 recvdoc = await self.sendDocs(senddoc)
-    #                 self.start_time = time.time()
-    #         except Exception as e:
-    #             import traceback
-    #             print(traceback.print_exc())
-    #             await asyncio.sleep(1)
+
 
 class TextHandler(logging.Handler):
     # This class allows you to log to a Tkinter Text or ScrolledText widget

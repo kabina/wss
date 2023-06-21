@@ -323,13 +323,11 @@ class Charger() :
         self.confV["$meter"] = self.meter
         self.confV["$transactionId"] = self.transactionId
         doc = json.loads(self.ocppdocs)[ocpp[0]]
-        print(doc)
-        print(self.cid)
+
         """ 고속 충전인 경우 Soc값 추가"""
         if self.cid.endswith("C") and doc[2] == "MeterValues":
             socstr = '{ "value": "'+str(self.soc)+'", "measurand": "SoC", "unit": "%" }'
             doc[3]["meterValue"][0]["sampledValue"].append(json.loads(socstr))
-        print(doc)
         """전문 템플릿 변환"""
 
         doc[options] = self.convertDocs(doc[options])
@@ -342,20 +340,16 @@ class Charger() :
         doc[1] = uid if uid else str(uuid.uuid4())
 
         """ doc가 datatransfer인 경우 문서 추가 렌더링"""
-        print(f'ocpp[1] : {ocpp[1]}')
+
         if "messageId" in ocpp[1] :
             ddoc = ocpp[1]
-            print(f'doc : {doc[3]}')
             for k in self.confV:
                 tc_render(ddoc, k, self.confV[k])
             doc[3]["messageId"]=ocpp[1]["messageId"]
-            print(f'doc : {doc[3]}')
-
             #del ddoc["messageId"]
             #doc[3]["data"] = ddoc
             doc[3] = ddoc
-            print(f'doc : {doc[3]}')
-
+        print(doc)
 
         return doc
     def change_status(self, status):
@@ -532,6 +526,8 @@ class Charger() :
                 return True
             self.req_message_history[message[1]] = message
             schema = f"./{self.testschem}/schemas/{message[2]}.json"
+            print(f'schema: {schema}')
+            print(f'message: {message[3]}')
             valid_schema = validate_json(message[3], schema)
             if not valid_schema :
                 self.log(f' 수신 전문 오류 {valid_schema[1]}')
@@ -615,12 +611,10 @@ class Charger() :
             await asyncio.sleep(1)
         return True
     async def charging(self):
-        print("Start Charing")
         d = json.loads(self.ocppdocs)["MeterValues"]
-        doc = self.convertSendDoc(["MeterValues", {}])
-        print("Before while")
         s = 0
         while True:
+            doc = self.convertSendDoc(["MeterValues", {}])
             if self.charger_status == "Charging":
                 v = self.meter + 99
                 print(self.meter)
@@ -648,9 +642,10 @@ class Charger() :
         for idx, c in enumerate(message_map[message_name]):
             doc = self.convertSendDoc(c)
             if c[0] == "MeterValues" :
+                doc = self.convertSendDoc(c)
                   # start : 5000, req : 5000, meter 9100
                 while True :
-                    if self.transactionId > 0 and self.charger_status == "Charging":
+                    if self.charger_status == "Charging":
                         v = self.meter + 999
                         if v >  (self.start_meter + self.req_watt ):
                             v = self.start_meter + self.req_watt

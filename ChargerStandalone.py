@@ -102,7 +102,6 @@ class Charger() :
         self.charger_meter = config.charger_meter
         self.charger_soc = config.charger_soc
         self.charger_server = config.charger_server
-        print("BEFORE REQ_MESSAGE")
         self.req_message_history = self.load_req_message_history()
 
 
@@ -110,9 +109,7 @@ class Charger() :
             "$uuid":str(uuid.uuid4()),
             "$timestamp":datetime.now().isoformat(sep="T", timespec="seconds")+'Z'
         }
-        print("AFTER REQ_MESSAGE")
         self.charger_configuration = json.loads(open("config.json","r", encoding='utf-8').read())
-        print("END OF INIT")
         self.message_func_map = {
             "TriggerMessage": self.TriggerMessage
         }
@@ -157,7 +154,6 @@ class Charger() :
             wss_url = f'{self.config.wss_url.replace("$server", self.charger_server)}/{self.mdl}/{self.config.rsno}'
         else:
             wss_url = f'{self.config.wss_url.replace("$server", self.charger_server)}/{self.mdl}/{self.config.sno}'
-        print(f'wss_url:{wss_url}')
         try :
             # if type == "standalone":
             #     wss_url = "wss://192.168.0.152:8765"
@@ -607,6 +603,7 @@ class Charger() :
         try:
             """Message Map 수행 중 수신되는 메시지 처리"""
             recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
+            await asyncio.sleep(2)
             result = await self.proc_recvdoc(recvdoc)
             print(f'Unter for result: {result}')
             if result == False:
@@ -685,12 +682,13 @@ class Charger() :
                 #self.change_status("Reserved" if self.reserved else doc[3]["status"])
                 self.charger_status = doc[3]["status"]
 
-            time.sleep(2)
             await self.sendDocs(doc)
+            await asyncio.sleep(2)
 
             try:
                 """Message Map 수행 중 수신되는 메시지 처리"""
                 recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
+                await asyncio.sleep(1)
                 result = await self.proc_recvdoc(recvdoc)
                 if result == False :
                     break
@@ -704,11 +702,9 @@ class Charger() :
 
     async def charger_init(self):
         try :
-            print("In init")
             await self.ws.close()
         except Exception as e:
             pass
-        print("In init")
         await self.conn("TC_02_ColdBoot", type="standalone")
         doc = self.convertSendDoc(["BootNotification", {}])
         await self.sendDocs(doc)
@@ -746,7 +742,6 @@ class Charger() :
         """
         from asyncio import Queue
         self.status = 0
-        print("IN STANDALONE")
         cur_idx = self.lst_cases.curselection()
         cur_idx = cur_idx[0] if cur_idx else 0
         self.lst_cases.selection_clear(cur_idx+1,END)

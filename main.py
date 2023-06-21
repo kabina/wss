@@ -36,6 +36,8 @@ class ChargerSim(tk.Tk):
         self.startApp()
         self.cur_charger
 
+
+
     def config_update(self):
         self.interval1 = ((datetime.now() + timedelta(
             seconds=int(self.en_timestamp2.get()))).isoformat(sep='T',
@@ -161,8 +163,8 @@ class ChargerSim(tk.Tk):
         self.progressbar.update()
 
     async def standalone(self, idx):
+        self.enable_control_button(idx)
         charger = None
-        print(self.chargerlist)
         self.logtabs.select(idx)
         if idx in self.chargerlist :
             if messagebox.askyesno(title="충전기동작중", message="연결을 끊고 재시작(Boot)하시겠습니까?"):
@@ -236,32 +238,41 @@ class ChargerSim(tk.Tk):
 
     def change_bt_color(self, idx, type=TAGGING):
         bdic = {
-            TAGGING:self.lst_bttag[idx],
-            COUPLER:self.lst_btcoupler[idx],
-            STARTTR:self.lst_btstarttr[idx],
-            STOPTR:self.lst_btstoptr[idx]
+            TAGGING: self.lst_bttag[idx],
+            COUPLER: self.lst_btcoupler[idx],
+            STARTTR: self.lst_btstarttr[idx],
+            STOPTR: self.lst_btstoptr[idx]
         }
         for i in range(4):
+            print(type)
             if i == type:
-                bdic[i].configure(style="Clicked.TButton")
+                bdic[i].configure(style="Fixed.TButton")
             else:
                 bdic[i].configure(style="TButton")
 
     async def tagCharger(self, idx, type=TAGGING):
-        await self.chargerlist[idx].cardtag()
         self.change_bt_color(idx, type=type)
+        await self.chargerlist[idx].cardtag()
 
     async def conn_coupler(self, idx, type=COUPLER):
-        await self.chargerlist[idx].conn_coupler()
         self.change_bt_color(idx, type=type)
+        await self.chargerlist[idx].conn_coupler()
 
     async def starttr(self, idx, type=STARTTR):
-        await self.chargerlist[idx].starttr()
+        print("before change color")
         self.change_bt_color(idx, type=type)
+        await self.chargerlist[idx].starttr()
 
     async def stoptr(self, idx, type=STOPTR):
-        await self.chargerlist[idx].stoptr()
         self.change_bt_color(idx, type=type)
+        await self.chargerlist[idx].stoptr()
+
+    def enable_control_button(self, idx):
+        for i in range(4):
+            self.lst_bttag[idx]['state'] = "enabled"
+            self.lst_btcoupler[idx]['state'] = "enabled"
+            self.lst_btstarttr[idx]['state'] = "enabled"
+            self.lst_btstoptr[idx]['state'] = "enabled"
 
     def directClientSend(self):
         import copy
@@ -308,6 +319,7 @@ class ChargerSim(tk.Tk):
     def show_txt_tc_rendered(self):
         self.frame_txt_tc.grid_remove()
         self.frame_txt_tc_rendered.grid(row=8, column=3, rowspan=3, sticky="we")
+
 
     def wssRenew(self):
         self.lb_url_comp.config(text=self.en_url.get()+'/'+self.testschem.get().split('/')[0]+'/'+self.en_mdl.get()+'/'+self.en_sno.get())
@@ -614,6 +626,7 @@ class ChargerSim(tk.Tk):
             btname = c.split('/')[-1]
             btCharger = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.standalone, idx))
             btCharger.grid(row=0, column=idx, sticky="we")
+
             self.chargers.append(btCharger)
 
         style = ttk.Style()
@@ -621,7 +634,10 @@ class ChargerSim(tk.Tk):
         style.configure("BLabel.TLabel", foreground="blue")
         style.configure("GLabel.TLabel", foreground="green")
         style.configure("TButton", background="SystemButtonFace")
-        style.configure("Clicked.TButton", background="green")
+        style.map('Fixed.TButton',
+                  background=[('active', '#ff9900'),
+                              ('pressed', '#ff9900'),
+                              ('!active', '#ff9900')])
 
         for idx, c in enumerate(protocol_keys):
             chrstn_nm = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["chrstn_nm"]}', width=12, anchor="center", style='NLabel.TLabel')
@@ -663,31 +679,30 @@ class ChargerSim(tk.Tk):
             soc.grid(row=8, column=idx, sticky="we")
             self.charger_soc.append(soc)
 
-        lst_bttag = []
         for idx, c in enumerate(protocol_keys):
             btname = '카드 태깅'
-            bttag = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.tagCharger, idx), style="TButton")
+            bttag = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.tagCharger, idx),  state="disabled")
             bttag.grid(row=9, column=idx, sticky="we")
             self.lst_bttag.append(bttag)
 
 
         for idx, c in enumerate(protocol_keys):
             btcouplernm = '커플러 연결'
-            btcoupler = ttk.Button(self.frameBtChargers, text=btcouplernm, width=12, command=async_handler(self.conn_coupler, idx), style="TButton")
+            btcoupler = ttk.Button(self.frameBtChargers, text=btcouplernm, width=12, command=async_handler(self.conn_coupler, idx),  state="disabled")
             btcoupler.grid(row=10, column=idx, sticky="we")
             self.lst_btcoupler.append(btcoupler)
 
 
         for idx, c in enumerate(protocol_keys):
             btstarttrnm = '충전시작'
-            btstarttr = ttk.Button(self.frameBtChargers, text=btstarttrnm, width=12, command=async_handler(self.starttr, idx), style="TButton")
+            btstarttr = ttk.Button(self.frameBtChargers, text=btstarttrnm, width=12, command=async_handler(self.starttr, idx),  state="disabled")
             btstarttr.grid(row=11, column=idx, sticky="we")
             self.lst_btstarttr.append(btstarttr)
 
 
         for idx, c in enumerate(protocol_keys):
             btchgendnm= '충전종료'
-            btchgend = ttk.Button(self.frameBtChargers, text=btchgendnm, width=12, command=async_handler(self.stoptr, idx), style="TButton")
+            btchgend = ttk.Button(self.frameBtChargers, text=btchgendnm, width=12, command=async_handler(self.stoptr, idx),  state="disabled")
             btchgend.grid(row=12, column=idx, sticky="we")
             self.lst_btstoptr.append(btchgend)
 

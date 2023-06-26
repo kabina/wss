@@ -110,9 +110,8 @@ def has_refs(schema):
 
 def validate_json(data, schema):
     # Load the JSON data
-    if isinstance(data, str):
-        with open(data) as file:
-            data = json.load(file)
+    if data and not isinstance(data, dict):
+        return False, "None Data"
 
     # Load the main schema
     if isinstance(schema, str):

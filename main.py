@@ -168,7 +168,8 @@ class ChargerSim(tk.Tk):
         self.logtabs.select(idx)
         if idx in self.chargerlist :
             if messagebox.askyesno(title="충전기동작중", message="연결을 끊고 재시작(Boot)하시겠습니까?"):
-                await self.chargerlist[idx].charger_init()
+                await self.chargerlist[idx].close()
+                #await self.chargerlist[idx].charger_init()
             else:
                 return
         if self.bt_standalone['state'] == tk.NORMAL :
@@ -244,7 +245,6 @@ class ChargerSim(tk.Tk):
             STOPTR: self.lst_btstoptr[idx]
         }
         for i in range(4):
-            print(type)
             if i == type:
                 bdic[i].configure(style="Fixed.TButton")
             else:
@@ -259,7 +259,6 @@ class ChargerSim(tk.Tk):
         await self.chargerlist[idx].conn_coupler()
 
     async def starttr(self, idx, type=STARTTR):
-        print("before change color")
         self.change_bt_color(idx, type=type)
         await self.chargerlist[idx].starttr()
 
@@ -512,10 +511,10 @@ class ChargerSim(tk.Tk):
         from tkinter import Label, Entry, Button, scrolledtext, Listbox
 
         self.window = tkinter.Tk()
-        self.tabs = ttk.Notebook(self.window, width=15)
+        self.tabs = ttk.Notebook(self.window, width=20)
         s = ttk.Style()
         s.theme_use('default')
-        s.configure('Tab', width=10)
+        s.configure('Tab', width=20)
         self.tabs.pack(fill=BOTH, expand=TRUE)
         self.tab1 = tkinter.ttk.Frame(self.tabs)
         self.tab2 = tkinter.ttk.Frame(self.tabs)
@@ -622,22 +621,24 @@ class ChargerSim(tk.Tk):
 
         protocols = self.conf["properties"]["protocol"]
         protocol_keys = list(self.conf["properties"]["protocol"].keys())
-        for idx, c in enumerate(protocol_keys):
-            btname = c.split('/')[-1]
-            btCharger = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.standalone, idx))
-            btCharger.grid(row=0, column=idx, sticky="we")
-
-            self.chargers.append(btCharger)
 
         style = ttk.Style()
         style.configure("NLabel.TLable", foreground="black", background="white", font=("TkDefaultFont", 12), padding=10)
         style.configure("BLabel.TLabel", foreground="blue")
         style.configure("GLabel.TLabel", foreground="green")
         style.configure("TButton", background="SystemButtonFace")
+        style.configure("Blue.TButton", forground="blue")
         style.map('Fixed.TButton',
                   background=[('active', '#ff9900'),
                               ('pressed', '#ff9900'),
                               ('!active', '#ff9900')])
+
+        for idx, c in enumerate(protocol_keys):
+            btname = c.split('/')[-1]
+            btCharger = ttk.Button(self.frameBtChargers, text=btname, width=12, command=async_handler(self.standalone, idx), style='Blue.TButton')
+            btCharger.grid(row=0, column=idx, sticky="we")
+
+            self.chargers.append(btCharger)
 
         for idx, c in enumerate(protocol_keys):
             chrstn_nm = ttk.Label(self.frameBtChargers, text=f'{protocols[protocol_keys[idx]]["chrstn_nm"]}', width=12, anchor="center", style='NLabel.TLabel')

@@ -104,11 +104,7 @@
 				}
 			},
 			"required": [
-				"chargingProfileId",
-				"stackLevel",
-				"chargingProfilePurpose",
-				"chargingProfileKind",
-				"chargingSchedule"
+				"transactionId"
 			]
 		}
 	},

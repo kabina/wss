@@ -282,10 +282,8 @@ class Charger() :
         self.log(f' >> {self.req_message_history[ocpp[1]][2]}:{ocpp}', attr='green')
 
     async def cardtag(self):
-        print("BEFORE AUTH")
         doc = self.convertSendDoc(["Authorize", {"idTag":"$idTag"}])
         await self.sendDocs(doc)
-        print("AFTER AUTH")
 
     async def conn_coupler(self):
         doc = self.convertSendDoc(["StatusNotification", {"status":"preparing"}])
@@ -300,6 +298,7 @@ class Charger() :
 
     async def stoptr(self):
         conv_doc = self.convertSendDoc(["StopTransaction",{}])
+        self.change_status("SuspendedEV")
         await self.sendDocs(conv_doc)
         conv_doc = self.convertSendDoc(["StatusNotification",{"status":"finishing"}])
         await self.sendDocs(conv_doc)
@@ -349,7 +348,6 @@ class Charger() :
             #del ddoc["messageId"]
             #doc[3]["data"] = ddoc
             doc[3] = ddoc
-        print(doc)
 
         return doc
     def change_status(self, status):
@@ -366,8 +364,8 @@ class Charger() :
 
     async def sendDocs(self, doc):
         await self.ws.send(json.dumps(doc))
+        """ [2 로 시작하는 '송신' 메시지는 req_message에 넣는다"""
         self.req_message_history[doc[1]] = doc
-        print(doc)
         self.log(f' >> {doc[2]}:{doc}', attr='green')
         if doc[2] == "BootNotification":
             #self.charger_status = "Boot"
@@ -377,6 +375,9 @@ class Charger() :
             if self.reserved and doc[3]["status"]=="Available":
                 doc[3]["status"] = "Reserved"
             self.change_status(doc[3]["status"])
+        elif doc[2] == "StopTransaction":
+            #self.charger_status = "Boot"
+            self.change_status("SuspendedEV")
         return doc
 
     async def proc_message(self, recvdoc):
@@ -387,7 +388,6 @@ class Charger() :
                 await func(jrecvdoc)
 
     async def TriggerMessage(self, jrecvdoc):
-        print(f'triggermessage : {jrecvdoc}')
         message_name = jrecvdoc[3]["requestedMessage"]
         if message_name is None or len(message_name)==0 :
             status = "Rejected"
@@ -443,7 +443,6 @@ class Charger() :
         if len(jmsg)==3 and jmsg[1] in self.req_message_history :
             # self.log(f' << {inprog_name}:{msg}', attr='blue')
             # Server Response 후처리 주로 charger 내부변수 및 UI 값 변경
-            print(jmsg)
             orgmsg = self.req_message_history[jmsg[1]]
             if orgmsg[2] == "StartTransaction" and jmsg[0] == 3 and "transactionId" in jmsg[2]:
                 self.transactionId = jmsg[2]["transactionId"]
@@ -455,7 +454,7 @@ class Charger() :
                 self.en_tr.delete(0, END)
                 self.en_tr.insert(0, "0")
             elif orgmsg[2] == "DataTransfer" and orgmsg[3]["messageId"]=="chargeValue":
-                self.req_watt = int(jmsg[2]["data"]["watt"]) + self.meter
+                self.req_watt = jmsg[2]["data"]["watt"]
             elif orgmsg[2] == "BootNotification":
                 self.interval = jmsg[2]["interval"]
                 self.charger_configuration["HeartbeatInterval"] = self.interval
@@ -498,8 +497,6 @@ class Charger() :
         diag_info["vendorErrorCode"] = "ERR - 001"
         return diag_info
 
-
-
     async def proc_recvdoc(self, recvdoc):
         """
         서버로 부터의 메시지 처리/원격 요청 처리 및 Response 처리
@@ -512,29 +509,31 @@ class Charger() :
 
             self.start_time = time.time()
             message = json.loads(recvdoc)
-            # 수신 로그 출력
 
+            if message[0] == 2 :
+                self.req_message_history[message[1]] = message
+
+            # 수신 로그 출력
             self.log(f' << {self.req_message_history[message[1]][2] if len(message)==3 else message[2]}:{recvdoc}', attr='blue')
 
             result = await self.proc_reply(recvdoc)
-            # 진행 중 문제가 있는 경우 트랜잭션 중지
             if not result:
                 senddoc = self.convertSendDoc(["StopTransaction", {"transactionId":self.transactionId}])
                 await self.sendDocs(senddoc)
-
             if message[0] == 3:
                 return True
-            self.req_message_history[message[1]] = message
-            schema = f"./{self.testschem}/schemas/{message[2]}.json"
-            print(f'schema: {schema}')
-            print(f'message: {message[3]}')
-            valid_schema = validate_json(message[3], schema)
-            if not valid_schema :
-                self.log(f' 수신 전문 오류 {valid_schema[1]}')
+
+            # 진행 중 문제가 있는 경우 트랜잭션 중지
             message_name = message[2]
 
             # 메시지가 송신에 대한 응답인 경우
-            print(f'proc_recvdoc:{recvdoc}')
+            schema = f"./{self.testschem}/schemas/{message[2]}.json"
+            valid_schema, error_message = validate_json(message[3], schema)
+            if not valid_schema :
+                self.log(f' 수신 전문 오류 {error_message}')
+            message_name = message[2]
+
+            # 메시지가 송신에 대한 응답인 경우
             """recv가 2이면서 개별 처리건의 메시지의 경우 처리 """
             if message_name == "TriggerMessage":
                 await self.proc_message(recvdoc)
@@ -617,7 +616,6 @@ class Charger() :
             doc = self.convertSendDoc(["MeterValues", {}])
             if self.charger_status == "Charging":
                 v = self.meter + 99
-                print(self.meter)
                 self.change_meter(v)
                 if self.cid.endswith("C"):
                     s = self.soc + 5

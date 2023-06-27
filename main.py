@@ -189,9 +189,10 @@ class ChargerSim(tk.Tk):
                         self.lst_tc.insert(END, t)
 
             charger_conf_details = None
-            for charger in charger_confs.keys():
-                if self.chargers[idx]['text'] in charger :
-                    charger_conf_details = charger_confs[charger]
+            for c in charger_confs.keys():
+                if c.endswith(self.chargers[idx]['text']):
+                    charger_conf_details = charger_confs[c]
+
             config = Config(
                 wss_url=self.en_url.get(),
                 rest_url=self.en_rest_url.get(),

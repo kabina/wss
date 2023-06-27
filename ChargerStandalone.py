@@ -180,19 +180,22 @@ class Charger() :
             """Server인증서 수신 및 Text 변환 출력"""
             server_cert = self.ws.transport.get_extra_info('ssl_object').getpeercert(binary_form=True)
             # X509 객체로 변환
+            version = self.ws.transport.get_extra_info('ssl_object').version()
+            #print(f'tls_version:{version}')
+
 
             x509cert = crypto.load_certificate(crypto.FILETYPE_ASN1, server_cert)
             pub_key_obj = x509cert.get_pubkey()
             pub_key_str = crypto.dump_publickey(crypto.FILETYPE_PEM, pub_key_obj)
             pub_key_pem = ssl.DER_cert_to_PEM_cert(pub_key_str)
-            print("*"*100)
-            print(pub_key_pem)
+            #print("*"*100)
+            #print(pub_key_pem)
 
             server_str = crypto.dump_certificate(crypto.FILETYPE_PEM, x509cert)
-            print(server_str)
+            # print(server_str)
             server_pem = ssl.DER_cert_to_PEM_cert(server_str)
-            print("*" * 100)
-            print(server_pem)
+            #print("*" * 100)
+            #print(server_pem)
 
             # 인증서의 텍스트 형식으로 변환
             # cert_text = crypto.dump_certificate(crypto.FILETYPE_PEM, x509)
@@ -201,19 +204,19 @@ class Charger() :
             # print(base64.b64encode(cert_text).decode())
             cipher_list = sslcontext.get_ciphers()
 
-            print("서버지원 가능 목록+++++++++++++++++++++++++++")
-            for c in cipher_list:
-                print(f'tls:{c["protocol"]}, cipher:{c["name"]}')
-            protocol = self.ws.transport.get_protocol()
-            if protocol is not None:
-                print(protocol)
-            ciphers = sslcontext.get_ciphers()
-
-            print("클라이언트 지원 가능 목록++++++++++++++++++++++++")
-            cssl_context = ssl.create_default_context()
-            cipher_list= cssl_context.get_ciphers()
-            for c in cipher_list:
-                print(f'tls:{c["protocol"]}, cipher:{c["name"]}')
+            # print("서버지원 가능 목록+++++++++++++++++++++++++++")
+            # for c in cipher_list:
+            #     print(f'tls:{c["protocol"]}, cipher:{c["name"]}')
+            # protocol = self.ws.transport.get_protocol()
+            # if protocol is not None:
+            #     print(protocol)
+            # ciphers = sslcontext.get_ciphers()
+            #
+            # print("클라이언트 지원 가능 목록++++++++++++++++++++++++")
+            # cssl_context = ssl.create_default_context()
+            # cipher_list= cssl_context.get_ciphers()
+            # for c in cipher_list:
+            #     print(f'tls:{c["protocol"]}, cipher:{c["name"]}')
 
             ssl_socket =self.ws.transport.get_extra_info('ssl_object')
             protocol_version = ssl_socket.cipher()[1]
@@ -229,7 +232,7 @@ class Charger() :
         await asyncio.sleep(1)
         self.en_tr.delete(0, END)
         self.en_tr.insert(0,"Not In Transaction")
-
+        print(f"Connection Success : {wss_url}")
     async def close(self):
         await self.ws.close()
 

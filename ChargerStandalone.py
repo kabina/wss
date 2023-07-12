@@ -603,7 +603,6 @@ class Charger() :
             recvdoc = await asyncio.wait_for(self.ws.recv(), timeout=2.0)
             await asyncio.sleep(2)
             result = await self.proc_recvdoc(recvdoc)
-            print(f'Unter for result: {result}')
             if result == False:
                 raise Exception("Result is False")  # 예외 발생
         except KeyError:

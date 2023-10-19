@@ -20,6 +20,18 @@ STOPTR = 3
 class ChargerSim(tk.Tk):
 
     def __init__(self, async_loop):
+        """
+        The __init__ function is called when the class is instantiated.
+        It sets up the initial state of the object, which in this case means
+        that it creates a new QApplication and a MainWindow widget. It also
+        sets up some connections to handle events.
+
+        :param self: Represent the instance of the class
+        :param async_loop: Pass the asyncio event loop to the class
+        :return: The object itself
+        :doc-author: Trelent
+        """
+
         self.async_loop = async_loop
         self.TC = None
         self.TC_original = None
@@ -40,6 +52,15 @@ class ChargerSim(tk.Tk):
 
 
     def config_update(self):
+        """
+        The config_update function is called when the user clicks on the &quot;Update&quot; button in the GUI.
+        It updates all of the configuration variables that are used by other functions in this program.
+        The config_update function also calls a Config class object, which is defined below.
+
+        :param self: Make the method callable from outside of the class
+        :return: A config object
+        :doc-author: Trelent
+        """
         self.interval1 = ((datetime.now() + timedelta(
             seconds=int(self.en_timestamp2.get()))).isoformat(sep='T',
                                                          timespec='seconds') + 'Z') if self.en_timestamp2.get() else 0
@@ -89,6 +110,15 @@ class ChargerSim(tk.Tk):
                         )
 
     def tcload_callback(self):
+        """
+        The tcload_callback function is called when the user clicks on the &quot;Load TC&quot; button.
+        It opens a file dialog to select a json file containing test cases, and then loads it into
+        the self.TC dictionary variable.
+
+        :param self: Represent the instance of the class
+        :return: The tc variable, which is a dictionary
+        :doc-author: Trelent
+        """
         try :
             self.en_log.delete(0, END)
             self.TC = json.loads(open(filedialog.askopenfilename(initialdir=".",
@@ -105,6 +135,16 @@ class ChargerSim(tk.Tk):
             self.lst_cases.insert(END, item )
 
     def checkocpp(self, event):
+        """
+        The checkocpp function is called when the user changes the text in the
+        text widget. It checks to see if there are any changes, and if so, it validates
+        the JSON against a schema file. If it passes validation, then we enable saving.
+
+        :param self: Represent the instance of the class
+        :param event: Get the text from the widget
+        :return: True when the changed text is valid json
+        :doc-author: Trelent
+        """
         import jsonschema
         key = None
         if self.vtxt_tc_changed.get() == 0 :
@@ -130,6 +170,7 @@ class ChargerSim(tk.Tk):
         except json.decoder.JSONDecodeError as e:
             messagebox.showerror(title="알림", message="변경 내용이 Json Format에 맞지 않습니다.")
             return False
+
 
     def saveocpp(self):
         try :
@@ -999,6 +1040,7 @@ class ChargerSim(tk.Tk):
 
 def main(async_loop):
     ChargerSim(async_loop)
+
 
 if __name__ == "__main__":
     async_loop = asyncio.new_event_loop()

@@ -492,6 +492,7 @@ class Charger() :
         return True
 
     def get_diag_info(self):
+
         """충전기 진단 메시지 생성
         """
         diag_info = ChargerUtil.diag_info
@@ -501,11 +502,6 @@ class Charger() :
         return diag_info
 
     async def proc_recvdoc(self, recvdoc):
-        """
-        서버로 부터의 메시지 처리/원격 요청 처리 및 Response 처리
-        :param recvdoc:
-        :return:
-        """
 
         # 수신 메시지에 대한 Response 처리 (2,3  모두 Response 처리) 3은 화면 로그만 출력
         if recvdoc:
